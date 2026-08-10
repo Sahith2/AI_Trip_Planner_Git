@@ -1,177 +1,88 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>AI Trip Planner</title>
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
 
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f4f7fb;
-            color: #1f2937;
-        }
-
-        .header {
-            background: linear-gradient(
-                135deg,
-                #2563eb,
-                #4f46e5
-            );
-            color: white;
-            padding: 28px 40px;
-        }
-
-        .header h1 {
-            margin: 0 0 8px;
-            font-size: 30px;
-        }
-
-        .header p {
-            margin: 0;
-            opacity: 0.9;
-        }
-
-        .container {
-            max-width: 1100px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
-
-        .card {
-            background: white;
-            border-radius: 14px;
-            padding: 24px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.07);
-        }
-
-        .card h2 {
-            margin-top: 0;
-        }
-
-        textarea {
-            width: 100%;
-            min-height: 130px;
-            border: 1px solid #d1d5db;
-            border-radius: 10px;
-            padding: 14px;
-            font-size: 16px;
-            resize: vertical;
-        }
-
-        button {
-            margin-top: 14px;
-            background: #2563eb;
-            color: white;
-            border: none;
-            border-radius: 9px;
-            padding: 12px 22px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background: #1d4ed8;
-        }
-
-        button:disabled {
-            background: #9ca3af;
-            cursor: not-allowed;
-        }
-
-        .examples {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .example {
-            background: #eef2ff;
-            color: #3730a3;
-            padding: 9px 13px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .example:hover {
-            background: #e0e7ff;
-        }
-
-        .response {
-            white-space: pre-wrap;
-            line-height: 1.6;
-        }
-
-        .loading {
-            color: #6b7280;
-            font-style: italic;
-        }
-
-        .error {
-            color: #dc2626;
-            background: #fef2f2;
-            padding: 12px;
-            border-radius: 8px;
-        }
-
-        .features {
-            display: grid;
-            grid-template-columns: repeat(
-                auto-fit,
-                minmax(200px, 1fr)
-            );
-            gap: 15px;
-        }
-
-        .feature {
-            background: #f8fafc;
-            border-radius: 10px;
-            padding: 18px;
-        }
-
-        .feature strong {
-            display: block;
-            margin-bottom: 6px;
-        }
-    </style>
 </head>
+
 
 <body>
 
-    <div class="header">
-        <h1>🌎 AI Trip & Outdoor Activity Planner</h1>
+
+    <!-- =====================================================
+         HEADER
+         ===================================================== -->
+
+    <header class="header">
+
+        <h1>
+            🌎 AI Trip & Outdoor Activity Planner
+        </h1>
+
         <p>
-            Plan smarter trips using AI, weather,
-            air quality and travel knowledge.
+            Plan smarter trips with AI-powered
+            itineraries, weather intelligence,
+            travel knowledge and personalized planning.
         </p>
-    </div>
+
+    </header>
 
 
-    <div class="container">
 
-        <!-- Planner -->
+    <!-- =====================================================
+         MAIN CONTENT
+         ===================================================== -->
 
-        <div class="card">
+    <main class="container">
 
-            <h2>Plan Your Trip</h2>
 
-            <p>
-                Tell the AI agent what you want to do.
-            </p>
+        <!-- =================================================
+             PLANNER
+             ================================================= -->
+
+        <section class="card planner-card">
+
+            <div class="planner-title">
+
+                <div class="planner-title-icon">
+                    ✨
+                </div>
+
+                <div>
+
+                    <h2>
+                        Plan Your Next Adventure
+                    </h2>
+
+                    <p>
+                        Tell the AI agent what you want
+                        from your trip.
+                    </p>
+
+                </div>
+
+            </div>
+
 
             <textarea
                 id="message"
-                placeholder="Example: Plan a 3-day trip to Chicago with outdoor activities, good food and a reasonable budget."
+                placeholder="Example: Plan a 5-day trip to New York with outdoor activities, Indian food, a reasonable budget, and weather-aware scheduling."
             ></textarea>
+
 
             <button
                 id="planButton"
@@ -180,16 +91,20 @@
                 ✨ Plan My Trip
             </button>
 
+
+            <!-- Example prompts -->
+
             <div class="examples">
 
                 <div
                     class="example"
                     onclick="useExample(
-                        'Plan a 3-day trip to Chicago with outdoor activities.'
+                        'Plan a 3-day trip to Chicago with outdoor activities and good food.'
                     )"
                 >
-                    Chicago 3-day trip
+                    🏙️ Chicago 3-day trip
                 </div>
+
 
                 <div
                     class="example"
@@ -197,8 +112,19 @@
                         'Plan a weekend trip to Austin with outdoor activities and good food.'
                     )"
                 >
-                    Austin weekend
+                    🌵 Austin weekend
                 </div>
+
+
+                <div
+                    class="example"
+                    onclick="useExample(
+                        'Plan a 5-day trip to New York with Indian food and weather-aware outdoor activities.'
+                    )"
+                >
+                    🗽 New York + Food
+                </div>
+
 
                 <div
                     class="example"
@@ -206,8 +132,9 @@
                         'Create a packing list for a rainy outdoor trip.'
                     )"
                 >
-                    Packing list
+                    🎒 Packing list
                 </div>
+
 
                 <div
                     class="example"
@@ -215,170 +142,460 @@
                         'Find interesting historical attractions in Chicago.'
                     )"
                 >
-                    Historical attractions
+                    🏛️ Historical attractions
                 </div>
 
             </div>
 
-        </div>
+        </section>
 
 
-        <!-- AI response -->
 
-        <div class="card">
+        <!-- =================================================
+             TRIP SUMMARY
+             ================================================= -->
 
-            <h2>🤖 AI Planner</h2>
+        <section
+            class="card"
+            id="tripSummaryCard"
+        >
+
+            <h2>
+                🧭 Trip Summary
+            </h2>
+
+            <p>
+                Your trip overview will appear here
+                after the AI creates your plan.
+            </p>
+
+
+            <div
+                id="tripSummary"
+                class="trip-summary"
+            >
+
+                <div class="summary-item">
+
+                    <span class="label">
+                        Destination
+                    </span>
+
+                    <span
+                        class="value"
+                        id="summaryDestination"
+                    >
+                        —
+                    </span>
+
+                </div>
+
+
+                <div class="summary-item">
+
+                    <span class="label">
+                        Duration
+                    </span>
+
+                    <span
+                        class="value"
+                        id="summaryDuration"
+                    >
+                        —
+                    </span>
+
+                </div>
+
+
+                <div class="summary-item">
+
+                    <span class="label">
+                        Weather
+                    </span>
+
+                    <span
+                        class="value"
+                        id="summaryWeather"
+                    >
+                        —
+                    </span>
+
+                </div>
+
+
+                <div class="summary-item">
+
+                    <span class="label">
+                        Budget
+                    </span>
+
+                    <span
+                        class="value"
+                        id="summaryBudget"
+                    >
+                        —
+                    </span>
+
+                </div>
+
+
+                <div class="summary-item">
+
+                    <span class="label">
+                        Food
+                    </span>
+
+                    <span
+                        class="value"
+                        id="summaryFood"
+                    >
+                        —
+                    </span>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             AI RESPONSE
+             ================================================= -->
+
+        <section class="card">
+
+            <h2>
+                🤖 AI Planner
+            </h2>
+
+            <p>
+                The AI agent will search travel knowledge,
+                check conditions and build your trip.
+            </p>
+
 
             <div
                 id="response"
                 class="response"
             >
-                Your trip plan will appear here.
+
+                <div class="result-card">
+
+                    <strong>
+                        Ready when you are.
+                    </strong>
+
+                    <p>
+                        Enter a destination and describe
+                        the kind of experience you want.
+                    </p>
+
+                </div>
+
             </div>
 
-        </div>
+        </section>
 
 
-        <!-- Features -->
 
-        <div class="card">
+        <!-- =================================================
+             ITINERARY
+             ================================================= -->
 
-            <h2>What the Agent Can Do</h2>
+        <section
+            class="card"
+            id="itineraryCard"
+        >
+
+            <h2>
+                🗓️ Your Itinerary
+            </h2>
+
+            <p>
+                Your AI-generated day-by-day itinerary
+                will appear here.
+            </p>
+
+
+            <div id="itinerary">
+
+                <div class="result-card">
+
+                    Your itinerary will be generated
+                    by the AI agent.
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             WEATHER
+             ================================================= -->
+
+        <section
+            class="card"
+            id="weatherCard"
+        >
+
+            <h2>
+                🌦️ Weather Intelligence
+            </h2>
+
+            <p>
+                Weather and air-quality information
+                used by the AI planner.
+            </p>
+
+
+            <div id="weather">
+
+                <div class="weather-card">
+
+                    <strong>
+                        Weather information will appear
+                        after planning your trip.
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             FOOD PLANNER
+             ================================================= -->
+
+        <section
+            class="card"
+            id="foodCard"
+        >
+
+            <h2>
+                🍛 Food Planner
+            </h2>
+
+            <p>
+                Personalized food recommendations
+                based on your trip preferences.
+            </p>
+
+
+            <div id="foodPlanner">
+
+                <div class="food-card">
+
+                    <strong>
+                        Tell the AI what kind of food
+                        you enjoy.
+                    </strong>
+
+                    <p>
+                        For example: Indian food,
+                        vegetarian, budget-friendly,
+                        seafood, or local cuisine.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             PACKING LIST
+             ================================================= -->
+
+        <section
+            class="card"
+            id="packingCard"
+        >
+
+            <h2>
+                🎒 Smart Packing List
+            </h2>
+
+            <p>
+                The AI agent can create a packing list
+                based on activities and conditions.
+            </p>
+
+
+            <div id="packingList">
+
+                <div class="packing-card">
+
+                    <strong>
+                        Packing recommendations will
+                        appear here.
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             AI EXPLANATION
+             ================================================= -->
+
+        <section
+            class="card"
+            id="reasonCard"
+        >
+
+            <h2>
+                💡 Why AI Made These Decisions
+            </h2>
+
+            <p>
+                The agent explains important planning
+                decisions instead of simply giving
+                you an itinerary.
+            </p>
+
+
+            <div id="aiReason">
+
+                <div class="ai-reason">
+
+                    <div class="ai-reason-title">
+                        🤖 AI reasoning
+                    </div>
+
+                    <div>
+                        Weather-based changes and
+                        activity recommendations will
+                        be explained here.
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             FEATURES
+             ================================================= -->
+
+        <section class="card">
+
+            <h2>
+                ✨ What the Agent Can Do
+            </h2>
+
 
             <div class="features">
 
-                <div class="feature">
-                    <strong>🌦️ Weather-aware planning</strong>
-                    Adjust outdoor activities based on
-                    forecast conditions.
-                </div>
 
                 <div class="feature">
-                    <strong>🔎 Semantic travel search</strong>
-                    Search destination knowledge using
-                    vector embeddings.
+
+                    <strong>
+                        🌦️ Weather-aware planning
+                    </strong>
+
+                    Adjust outdoor activities based
+                    on precipitation, temperature,
+                    air quality and other conditions.
+
                 </div>
 
-                <div class="feature">
-                    <strong>📅 Itinerary management</strong>
-                    Create and modify itinerary items
-                    stored in Lakebase.
-                </div>
 
                 <div class="feature">
-                    <strong>🎒 Packing planner</strong>
+
+                    <strong>
+                        🔎 Semantic travel search
+                    </strong>
+
+                    Retrieve relevant destination,
+                    attraction and activity knowledge
+                    using embeddings.
+
+                </div>
+
+
+                <div class="feature">
+
+                    <strong>
+                        📅 Itinerary management
+                    </strong>
+
+                    Create, remove, move and update
+                    itinerary items stored in Lakebase.
+
+                </div>
+
+
+                <div class="feature">
+
+                    <strong>
+                        🍛 Food planner
+                    </strong>
+
+                    Generate food recommendations
+                    based on destination and user
+                    preferences.
+
+                </div>
+
+
+                <div class="feature">
+
+                    <strong>
+                        🎒 Smart packing
+                    </strong>
+
                     Build a packing list based on
-                    trip conditions and activities.
+                    weather and planned activities.
+
+                </div>
+
+
+                <div class="feature">
+
+                    <strong>
+                        🤖 AI agent with tools
+                    </strong>
+
+                    Search information and take real
+                    actions against the trip data.
+
                 </div>
 
             </div>
 
-        </div>
-
-    </div>
+        </section>
 
 
-    <script>
-
-        function useExample(text) {
-            document.getElementById("message").value = text;
-        }
+    </main>
 
 
-        async function sendMessage() {
 
-            const messageBox =
-                document.getElementById("message");
+    <!-- =====================================================
+         JAVASCRIPT
+         ===================================================== -->
 
-            const responseBox =
-                document.getElementById("response");
+    <script
+        src="{{ url_for('static', filename='app.js') }}"
+    ></script>
 
-            const button =
-                document.getElementById("planButton");
-
-            const message =
-                messageBox.value.trim();
-
-
-            if (!message) {
-
-                responseBox.innerHTML =
-                    '<div class="error">' +
-                    'Please enter a trip request.' +
-                    '</div>';
-
-                return;
-            }
-
-
-            button.disabled = true;
-
-            button.textContent = "Planning...";
-
-            responseBox.innerHTML =
-                '<div class="loading">' +
-                '🤖 AI is planning your trip...' +
-                '</div>';
-
-
-            try {
-
-                const response = await fetch(
-                    "/api/chat",
-                    {
-                        method: "POST",
-
-                        headers: {
-                            "Content-Type":
-                                "application/json"
-                        },
-
-                        body: JSON.stringify({
-                            message: message
-                        })
-                    }
-                );
-
-
-                const data =
-                    await response.json();
-
-
-                if (!response.ok) {
-
-                    throw new Error(
-                        data.error ||
-                        "Request failed."
-                    );
-                }
-
-
-                responseBox.textContent =
-                    data.response ||
-                    "No response received.";
-
-            }
-
-            catch (error) {
-
-                responseBox.innerHTML =
-                    '<div class="error">' +
-                    "Error: " +
-                    error.message +
-                    "</div>";
-
-            }
-
-            finally {
-
-                button.disabled = false;
-
-                button.textContent =
-                    "✨ Plan My Trip";
-            }
-        }
-
-    </script>
 
 </body>
+
 </html>
