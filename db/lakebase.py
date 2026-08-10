@@ -1,10 +1,10 @@
 """
-Lakebase database helper for the AI Trip & Outdoor Activity Planner.
+Lakebase connection helper for the AI Trip & Outdoor Activity Planner.
 
-The connection URL is retrieved securely from a Databricks secret.
+Uses the Databricks App's Lakebase resource and OAuth authentication.
+No database password or connection string is stored in GitHub.
 """
 
-import base64
 import os
 from contextlib import contextmanager
 
@@ -13,86 +13,204 @@ from databricks.sdk import WorkspaceClient
 from psycopg2.extras import RealDictCursor
 
 
+# ------------------------------------------------------------
+# Databricks workspace client
+# ------------------------------------------------------------
+
 _workspace = WorkspaceClient()
 
-_SECRET_SCOPE = os.environ.get(
-    "LAKEBASE_SECRET_SCOPE",
-    "database"
-)
 
-_SECRET_KEY = os.environ.get(
-    "LAKEBASE_SECRET_KEY",
-    "lakebase-url"
-)
+# ------------------------------------------------------------
+# Lakebase endpoint
+# ------------------------------------------------------------
+
+# This must be the Lakebase endpoint associated with the
+# database resource used by the Databricks App.
+#
+# We will set this as an App environment variable.
+_ENDPOINT_NAME = os.environ.get("LAKEBASE_ENDPOINT_NAME")
 
 
-def _get_connection_url() -> str:
-    """Retrieve and decode the Lakebase connection URL."""
-    secret = _workspace.secrets.get_secret(
-        scope=_SECRET_SCOPE,
-        key=_SECRET_KEY
+# ------------------------------------------------------------
+# Create a fresh OAuth database credential
+# ------------------------------------------------------------
+
+def _get_database_token() -> str:
+    """
+    Generate a fresh OAuth credential for Lakebase.
+
+    Databricks Lakebase OAuth credentials are short-lived,
+    so we generate a new credential whenever a connection
+    is opened.
+    """
+
+    if not _ENDPOINT_NAME:
+        raise RuntimeError(
+            "LAKEBASE_ENDPOINT_NAME environment variable "
+            "is not configured."
+        )
+
+    credential = _workspace.postgres.generate_database_credential(
+        endpoint=_ENDPOINT_NAME
     )
 
-    return base64.b64decode(secret.value).decode("utf-8")
+    return credential.token
 
+
+# ------------------------------------------------------------
+# Open Lakebase connection
+# ------------------------------------------------------------
 
 @contextmanager
 def get_connection():
     """
-    Open a Lakebase connection and close it automatically.
-    Rows are returned as dictionaries.
+    Open a Lakebase PostgreSQL connection.
+
+    Databricks App automatically provides:
+        PGHOST
+        PGDATABASE
+        PGPORT
+        PGUSER
+        PGSSLMODE
+
+    A fresh OAuth token is generated for authentication.
     """
+
+    host = os.environ["PGHOST"]
+    database = os.environ["PGDATABASE"]
+    user = os.environ["PGUSER"]
+
+    port = os.environ.get(
+        "PGPORT",
+        "5432"
+    )
+
+    sslmode = os.environ.get(
+        "PGSSLMODE",
+        "require"
+    )
+
+    password = _get_database_token()
+
     connection = psycopg2.connect(
-        _get_connection_url(),
-        cursor_factory=RealDictCursor
+        host=host,
+        port=port,
+        database=database,
+        user=user,
+        password=password,
+        sslmode=sslmode,
+        cursor_factory=RealDictCursor,
     )
 
     try:
         yield connection
+
     finally:
         connection.close()
 
 
-def fetch_all(sql: str, params=None) -> list[dict]:
-    """Execute a SELECT query and return all rows."""
+# ------------------------------------------------------------
+# SELECT - multiple rows
+# ------------------------------------------------------------
+
+def fetch_all(
+    sql: str,
+    params=None
+) -> list[dict]:
+    """
+    Execute a SELECT query and return all rows.
+    """
+
     with get_connection() as connection:
+
         with connection.cursor() as cursor:
-            cursor.execute(sql, params)
+
+            cursor.execute(
+                sql,
+                params
+            )
+
             return cursor.fetchall()
 
 
-def fetch_one(sql: str, params=None):
-    """Execute a SELECT query and return one row."""
+# ------------------------------------------------------------
+# SELECT - one row
+# ------------------------------------------------------------
+
+def fetch_one(
+    sql: str,
+    params=None
+):
+    """
+    Execute a SELECT query and return one row.
+    """
+
     with get_connection() as connection:
+
         with connection.cursor() as cursor:
-            cursor.execute(sql, params)
+
+            cursor.execute(
+                sql,
+                params
+            )
+
             return cursor.fetchone()
 
 
-def execute(sql: str, params=None) -> int:
+# ------------------------------------------------------------
+# INSERT / UPDATE / DELETE
+# ------------------------------------------------------------
+
+def execute(
+    sql: str,
+    params=None
+) -> int:
     """
     Execute an INSERT, UPDATE, or DELETE statement.
 
     Returns the number of affected rows.
     """
+
     with get_connection() as connection:
+
         with connection.cursor() as cursor:
-            cursor.execute(sql, params)
+
+            cursor.execute(
+                sql,
+                params
+            )
+
             affected_rows = cursor.rowcount
+
             connection.commit()
 
             return affected_rows
 
 
-def execute_returning(sql: str, params=None):
+# ------------------------------------------------------------
+# INSERT / UPDATE with RETURNING
+# ------------------------------------------------------------
+
+def execute_returning(
+    sql: str,
+    params=None
+):
     """
-    Execute an INSERT/UPDATE statement that contains RETURNING
-    and return the resulting row.
+    Execute an INSERT or UPDATE statement containing
+    RETURNING and return the resulting row.
     """
+
     with get_connection() as connection:
+
         with connection.cursor() as cursor:
-            cursor.execute(sql, params)
+
+            cursor.execute(
+                sql,
+                params
+            )
+
             result = cursor.fetchone()
+
             connection.commit()
 
             return result
