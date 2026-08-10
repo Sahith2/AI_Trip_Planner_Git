@@ -9,3 +9,6 @@ command:
 env:
   - name: MODEL_ENDPOINT
     valueFrom: serving-endpoint
+
+  - name: ENDPOINT_NAME
+    valueFrom: database
