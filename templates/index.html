@@ -1,327 +1,1173 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Trip Planner</title>
+:root {
+  --bg: #f6f8fc;
+  --surface: #ffffff;
+  --text: #13213b;
+  --muted: #66758f;
+  --line: #e6ebf3;
+
+  --primary: #5b5ce2;
+  --primary-2: #7c5cff;
+
+  --shadow:
+    0 18px 55px rgba(28, 43, 76, .08);
+
+  --shadow-sm:
+    0 8px 28px rgba(28, 43, 76, .06);
+
+  --radius: 24px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  color: var(--text);
+
+  font-family:
+    Inter,
+    ui-sans-serif,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+
+  line-height: 1.55;
+
+  background:
+    radial-gradient(
+      circle at 8% 0%,
+      rgba(124, 92, 255, .11),
+      transparent 26%
+    ),
+    radial-gradient(
+      circle at 92% 7%,
+      rgba(56, 189, 248, .10),
+      transparent 24%
+    ),
+    var(--bg);
+}
+
+button,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
 
-  <link rel="stylesheet"
-        href="{{ url_for('static', filename='style.css') }}">
-</head>
+/* =========================
+   HERO
+========================= */
 
-<body>
+.hero {
+  position: relative;
+  overflow: hidden;
 
-<header class="hero">
-  <div class="hero-inner">
+  padding: 72px 24px 112px;
 
-    <div class="brand-mark">✦</div>
+  color: white;
 
-    <div>
-      <div class="eyebrow">TRAVEL INTELLIGENCE · AI-POWERED</div>
+  background:
+    radial-gradient(
+      circle at 80% 15%,
+      rgba(255,255,255,.18),
+      transparent 20%
+    ),
+    radial-gradient(
+      circle at 15% 90%,
+      rgba(56,189,248,.20),
+      transparent 28%
+    ),
+    linear-gradient(
+      135deg,
+      #111a3a 0%,
+      #4338a8 52%,
+      #6d5ce7 100%
+    );
+}
 
-      <h1>Plan a better trip.</h1>
+.hero:after {
+  content: "";
 
-      <p>
-        One smart workspace for itinerary planning, weather-aware
-        activities, food picks and packing essentials.
-      </p>
-    </div>
+  position: absolute;
 
-  </div>
-</header>
+  left: -5%;
+  right: -5%;
+  bottom: -70px;
 
+  height: 130px;
 
-<main class="container">
+  background: var(--bg);
 
-  <!-- PLANNER -->
-  <section class="card planner-card">
+  border-radius:
+    50% 50% 0 0 /
+    100% 100% 0 0;
+}
 
-    <div class="section-heading compact-heading">
-      <div class="icon-badge blue">✈️</div>
+.hero-inner {
+  position: relative;
+  z-index: 1;
 
-      <div>
-        <h2>Tell us about your trip</h2>
-        <p>
-          Describe your destination, preferences and anything
-          you want the planner to consider.
-        </p>
-      </div>
-    </div>
+  width: min(1180px, 100%);
+  margin: auto;
 
-    <textarea
-      id="message"
-      aria-label="Trip request"
-      placeholder="Example: Plan a 3-day trip to Orlando with outdoor activities, good food and weather-aware scheduling."
-    ></textarea>
+  display: flex;
+  align-items: center;
 
-    <div class="planner-actions">
+  gap: 20px;
+}
 
-      <button
-        id="planButton"
-        class="primary-button"
-        onclick="sendMessage()"
-      >
-        <span>✨</span>
-        Plan my trip
-      </button>
+.brand-mark {
+  width: 64px;
+  height: 64px;
 
-      <span class="shortcut">Ctrl + Enter</span>
+  flex: 0 0 64px;
 
-    </div>
+  display: grid;
+  place-items: center;
 
-    <div class="examples">
+  border-radius: 20px;
 
-      <button
-        class="example"
-        onclick="useExample('Plan a 3-day trip to Chicago with outdoor activities and good food.')"
-      >
-        🏙️ Chicago
-      </button>
+  background: rgba(255,255,255,.13);
 
-      <button
-        class="example"
-        onclick="useExample('Plan a weekend trip to Austin with outdoor activities and good food.')"
-      >
-        🌵 Austin weekend
-      </button>
+  border:
+    1px solid rgba(255,255,255,.24);
 
-      <button
-        class="example"
-        onclick="useExample('Plan a 5-day trip to New York with Indian food and weather-aware outdoor activities.')"
-      >
-        🗽 New York + food
-      </button>
+  box-shadow:
+    0 16px 38px rgba(0,0,0,.18),
+    inset 0 1px rgba(255,255,255,.2);
 
-      <button
-        class="example"
-        onclick="useExample('Create a packing list for a rainy outdoor trip.')"
-      >
-        🎒 Packing list
-      </button>
+  font-size: 30px;
 
-    </div>
+  backdrop-filter: blur(16px);
+}
 
-  </section>
+.eyebrow {
+  font-size: 11px;
+  letter-spacing: .18em;
+  font-weight: 850;
+  opacity: .72;
+}
 
+.hero h1 {
+  margin: 5px 0 8px;
 
-  <!-- TRIP SUMMARY -->
-  <section class="card" id="tripSummaryCard">
+  font-size: clamp(36px, 5vw, 58px);
 
-    <div class="section-heading">
+  line-height: 1.02;
 
-      <div class="icon-badge purple">🧭</div>
+  letter-spacing: -.045em;
+}
 
-      <div>
-        <h2>Trip overview</h2>
-        <p>A quick snapshot of your plan.</p>
-      </div>
+.hero p {
+  margin: 0;
 
-    </div>
+  max-width: 760px;
 
-    <div id="tripSummary" class="summary-grid">
+  color: rgba(255,255,255,.82);
 
-      <div class="summary-item">
-        <span class="label">Destination</span>
-        <span class="value" id="summaryDestination">—</span>
-      </div>
+  font-size: 16px;
+}
 
-      <div class="summary-item">
-        <span class="label">Duration</span>
-        <span class="value" id="summaryDuration">—</span>
-      </div>
 
-      <div class="summary-item">
-        <span class="label">Weather</span>
-        <span class="value" id="summaryWeather">—</span>
-      </div>
+/* =========================
+   LAYOUT
+========================= */
 
-      <div class="summary-item">
-        <span class="label">Budget</span>
-        <span class="value" id="summaryBudget">—</span>
-      </div>
+.container {
+  width: min(1180px, calc(100% - 32px));
 
-      <div class="summary-item">
-        <span class="label">Food</span>
-        <span class="value" id="summaryFood">—</span>
-      </div>
+  margin:
+    -42px auto 70px;
 
-    </div>
+  position: relative;
+  z-index: 2;
+}
 
-  </section>
+.card {
+  background: rgba(255,255,255,.92);
 
+  border:
+    1px solid rgba(228,234,244,.9);
 
-  <!-- ITINERARY -->
-  <section class="card" id="itineraryCard">
+  border-radius: var(--radius);
 
-    <div class="section-heading">
+  box-shadow: var(--shadow);
 
-      <div class="icon-badge indigo">🗓️</div>
+  padding: 30px;
 
-      <div>
-        <h2>Your itinerary</h2>
-        <p>
-          Day-by-day activities arranged around your
-          preferences and conditions.
-        </p>
-      </div>
+  margin-bottom: 20px;
 
-    </div>
+  backdrop-filter: blur(12px);
 
-    <div id="itinerary" class="itinerary-content">
+  transition:
+    transform .2s ease,
+    box-shadow .2s ease;
+}
 
-      <div class="empty-state">
-        Your personalized itinerary will appear here
-        after you plan your trip.
-      </div>
+.card:hover {
+  box-shadow:
+    0 22px 65px rgba(28,43,76,.10);
+}
 
-    </div>
+.section-heading {
+  display: flex;
+  align-items: flex-start;
 
-  </section>
+  gap: 14px;
 
+  margin-bottom: 22px;
+}
 
-  <!-- WEATHER -->
-  <section class="card" id="weatherCard">
+.compact-heading {
+  margin-bottom: 18px;
+}
 
-    <div class="section-heading">
+.section-heading h2 {
+  margin: 0 0 3px;
 
-      <div class="icon-badge sky">🌦️</div>
+  font-size: 22px;
 
-      <div>
-        <h2>Weather intelligence</h2>
-        <p>
-          Forecast details that influence outdoor recommendations.
-        </p>
-      </div>
+  letter-spacing: -.025em;
+}
 
-    </div>
+.section-heading p {
+  margin: 0;
 
-    <div id="weather" class="weather-grid">
+  color: var(--muted);
 
-      <div class="empty-state">
-        Weather information will appear after planning.
-      </div>
+  font-size: 14px;
+}
 
-    </div>
+.icon-badge {
+  width: 44px;
+  height: 44px;
 
-  </section>
+  flex: 0 0 44px;
 
+  border-radius: 14px;
 
-  <!-- FOOD -->
-  <section class="card" id="foodCard">
+  display: grid;
+  place-items: center;
 
-    <div class="section-heading">
+  font-size: 20px;
 
-      <div class="icon-badge amber">🍽️</div>
+  box-shadow:
+    inset 0 1px rgba(255,255,255,.8);
+}
 
-      <div>
-        <h2>Food picks</h2>
-        <p>
-          Restaurant and meal ideas matched to your trip.
-        </p>
-      </div>
+.blue {
+  background:
+    linear-gradient(135deg,#e9edff,#f2efff);
+}
 
-    </div>
+.purple {
+  background:
+    linear-gradient(135deg,#efeaff,#f5edff);
+}
 
-    <div id="foodPlanner" class="food-grid">
+.indigo {
+  background:
+    linear-gradient(135deg,#e9edff,#edf6ff);
+}
 
-      <div class="empty-state">
-        Food recommendations will appear after planning.
-      </div>
+.sky {
+  background:
+    linear-gradient(135deg,#e6f7ff,#eefcff);
+}
 
-    </div>
+.amber {
+  background:
+    linear-gradient(135deg,#fff3d7,#fff8e8);
+}
 
-  </section>
+.green {
+  background:
+    linear-gradient(135deg,#e5f8ed,#effcf4);
+}
 
+.violet {
+  background:
+    linear-gradient(135deg,#eee8ff,#f8f3ff);
+}
 
-  <!-- PACKING -->
-  <section class="card" id="packingCard">
 
-    <div class="section-heading">
+/* =========================
+   PLANNER
+========================= */
 
-      <div class="icon-badge green">🎒</div>
+.planner-card {
+  padding: 34px;
 
-      <div>
-        <h2>Smart packing list</h2>
-        <p>
-          Essentials selected from your activities
-          and expected conditions.
-        </p>
-      </div>
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255,255,255,.98),
+      rgba(249,250,255,.96)
+    );
+}
 
-    </div>
+textarea {
+  width: 100%;
 
-    <div id="packingList">
+  min-height: 132px;
 
-      <div class="empty-state">
-        Packing recommendations will appear after planning.
-      </div>
+  resize: vertical;
 
-    </div>
+  border:
+    1px solid #dfe5f0;
 
-  </section>
+  border-radius: 18px;
 
+  padding: 18px;
 
-  <!-- AI REASONING -->
-  <section class="card" id="reasonCard">
+  color: var(--text);
 
-    <div class="section-heading">
+  background: #fbfcff;
 
-      <div class="icon-badge violet">💡</div>
+  outline: none;
 
-      <div>
-        <h2>Why this plan?</h2>
-        <p>
-          The key decisions behind the itinerary,
-          weather adjustments and recommendations.
-        </p>
-      </div>
+  transition: .2s ease;
 
-    </div>
+  box-shadow:
+    inset 0 1px 2px rgba(30,45,75,.02);
+}
 
-    <div id="aiReason">
+textarea:focus {
+  border-color: #8580ef;
 
-      <div class="empty-state">
-        Planning decisions will appear here.
-      </div>
+  box-shadow:
+    0 0 0 4px rgba(91,92,226,.11),
+    0 8px 25px rgba(50,60,110,.05);
 
-    </div>
+  background: white;
+}
 
-  </section>
+textarea::placeholder {
+  color: #8c98aa;
+}
 
+.planner-actions {
+  display: flex;
 
-  <!-- FEATURES -->
-  <section class="feature-strip">
+  align-items: center;
 
-    <div>
-      <span>🌦️</span>
-      <strong>Weather-aware</strong>
-      <small>Outdoor plans adapt to conditions.</small>
-    </div>
+  gap: 12px;
 
-    <div>
-      <span>🔎</span>
-      <strong>Travel knowledge</strong>
-      <small>Relevant destinations and activities.</small>
-    </div>
+  margin-top: 14px;
+}
 
-    <div>
-      <span>📍</span>
-      <strong>Personalized</strong>
-      <small>Built around your preferences.</small>
-    </div>
+.primary-button {
+  display: inline-flex;
 
-    <div>
-      <span>🎒</span>
-      <strong>Ready to go</strong>
-      <small>Food and packing suggestions included.</small>
-    </div>
+  align-items: center;
 
-  </section>
+  gap: 8px;
 
-</main>
+  border: 0;
 
+  border-radius: 14px;
 
-<script src="{{ url_for('static', filename='app.js') }}"></script>
+  padding: 13px 20px;
 
-</body>
-</html>
+  color: white;
+
+  font-weight: 800;
+
+  background:
+    linear-gradient(
+      135deg,
+      var(--primary),
+      var(--primary-2)
+    );
+
+  box-shadow:
+    0 10px 24px rgba(91,92,226,.27);
+
+  transition: .2s ease;
+}
+
+.primary-button:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 14px 30px rgba(91,92,226,.34);
+}
+
+.primary-button:active {
+  transform: translateY(0);
+}
+
+.primary-button:disabled {
+  opacity: .68;
+
+  cursor: wait;
+
+  transform: none;
+}
+
+.shortcut {
+  color: #8a95a8;
+
+  font-size: 12px;
+}
+
+.examples {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 8px;
+
+  margin-top: 16px;
+}
+
+.example {
+  border:
+    1px solid var(--line);
+
+  background: white;
+
+  color: #4c5b73;
+
+  border-radius: 999px;
+
+  padding: 8px 12px;
+
+  font-size: 13px;
+
+  transition: .18s ease;
+}
+
+.example:hover {
+  border-color: #c9c8f8;
+
+  color: #514ed0;
+
+  background: #faf9ff;
+
+  transform: translateY(-1px);
+}
+
+
+/* =========================
+   SUMMARY
+========================= */
+
+.summary-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(5, 1fr);
+
+  gap: 12px;
+}
+
+.summary-item {
+  min-height: 112px;
+
+  padding: 17px;
+
+  border:
+    1px solid var(--line);
+
+  border-radius: 18px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #fff,
+      #f9fbff
+    );
+
+  transition: .18s ease;
+}
+
+.summary-item:hover {
+  transform: translateY(-2px);
+
+  box-shadow: var(--shadow-sm);
+}
+
+.label {
+  display: block;
+
+  text-transform: uppercase;
+
+  letter-spacing: .09em;
+
+  font-size: 10px;
+
+  font-weight: 850;
+
+  color: #8793a8;
+
+  margin-bottom: 9px;
+}
+
+.value {
+  display: block;
+
+  font-weight: 800;
+
+  font-size: 15px;
+
+  line-height: 1.4;
+}
+
+
+/* =========================
+   EMPTY / LOADING
+========================= */
+
+.empty-state {
+  border:
+    1px dashed #d9e1ed;
+
+  border-radius: 18px;
+
+  padding: 26px;
+
+  color: #7c899e;
+
+  background:
+    linear-gradient(
+      145deg,
+      #fbfcff,
+      #f7f9fd
+    );
+
+  text-align: center;
+}
+
+.loading {
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 17px;
+
+  border-radius: 16px;
+
+  background: #f4f5ff;
+
+  color: #5054b5;
+
+  font-weight: 750;
+}
+
+.spinner {
+  width: 17px;
+  height: 17px;
+
+  border:
+    2px solid #d3d6f8;
+
+  border-top-color: #5b5ce2;
+
+  border-radius: 50%;
+
+  animation:
+    spin .8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error {
+  padding: 16px;
+
+  border-radius: 15px;
+
+  background: #fff3f3;
+
+  border:
+    1px solid #ffd6d6;
+
+  color: #a13a3a;
+}
+
+
+/* =========================
+   ITINERARY
+========================= */
+
+.itinerary-content {
+  display: grid;
+
+  gap: 14px;
+}
+
+.day-card {
+  border:
+    1px solid var(--line);
+
+  border-radius: 20px;
+
+  overflow: hidden;
+
+  background: white;
+
+  box-shadow:
+    0 7px 24px rgba(30,45,80,.04);
+}
+
+.day-header {
+  display: flex;
+
+  align-items: center;
+
+  gap: 14px;
+
+  padding: 17px 19px;
+
+  background:
+    linear-gradient(
+      100deg,
+      #f5f6ff,
+      #fbfcff
+    );
+
+  border-bottom:
+    1px solid var(--line);
+}
+
+.day-number {
+  width: 42px;
+  height: 42px;
+
+  border-radius: 13px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #e7e9ff,
+      #f0ebff
+    );
+
+  color: #5754d6;
+
+  display: grid;
+
+  place-items: center;
+
+  font-weight: 900;
+}
+
+.day-title {
+  font-weight: 850;
+
+  font-size: 16px;
+}
+
+.day-subtitle {
+  font-size: 12px;
+
+  color: var(--muted);
+}
+
+.timeline {
+  padding:
+    4px 19px 18px 72px;
+}
+
+.timeline-item {
+  position: relative;
+
+  padding:
+    14px 0 14px 18px;
+
+  border-left:
+    2px solid #e7eaf5;
+}
+
+.timeline-item:last-child {
+  border-left-color: transparent;
+}
+
+.timeline-item:before {
+  content: "";
+
+  position: absolute;
+
+  left: -6px;
+  top: 21px;
+
+  width: 10px;
+  height: 10px;
+
+  border-radius: 50%;
+
+  background: #6b63e8;
+
+  box-shadow:
+    0 0 0 4px #efeeff;
+}
+
+.timeline-time {
+  font-size: 10px;
+
+  font-weight: 850;
+
+  color: #625edc;
+
+  text-transform: uppercase;
+
+  letter-spacing: .07em;
+}
+
+.timeline-title {
+  font-weight: 800;
+
+  margin-top: 2px;
+}
+
+.timeline-desc {
+  color: #65738a;
+
+  font-size: 13px;
+
+  margin-top: 2px;
+}
+
+
+/* =========================
+   WEATHER
+========================= */
+
+.weather-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(auto-fit,minmax(190px,1fr));
+
+  gap: 12px;
+}
+
+.weather-card {
+  border:
+    1px solid #e1e9f2;
+
+  border-radius: 19px;
+
+  padding: 18px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #fbfdff,
+      #f4f8ff
+    );
+
+  transition: .18s ease;
+}
+
+.weather-card:hover {
+  transform: translateY(-2px);
+
+  box-shadow: var(--shadow-sm);
+}
+
+.weather-date {
+  font-size: 12px;
+
+  color: #6e7b91;
+
+  font-weight: 800;
+}
+
+.weather-main {
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  margin: 8px 0 10px;
+}
+
+.weather-icon {
+  font-size: 29px;
+}
+
+.weather-temp {
+  font-size: 25px;
+
+  font-weight: 900;
+}
+
+.weather-desc {
+  color: #52627b;
+
+  font-size: 13px;
+
+  min-height: 39px;
+}
+
+.weather-meta {
+  display: flex;
+
+  gap: 8px;
+
+  flex-wrap: wrap;
+
+  margin-top: 10px;
+}
+
+.chip {
+  border-radius: 999px;
+
+  background: #edf2f8;
+
+  color: #56647b;
+
+  padding: 5px 9px;
+
+  font-size: 11px;
+
+  font-weight: 750;
+}
+
+
+/* =========================
+   FOOD
+========================= */
+
+.food-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(auto-fit,minmax(230px,1fr));
+
+  gap: 12px;
+}
+
+.food-card {
+  border:
+    1px solid #f0e1b7;
+
+  background:
+    linear-gradient(
+      145deg,
+      #fffdf6,
+      #fff8e8
+    );
+
+  border-radius: 19px;
+
+  padding: 18px;
+
+  transition: .18s ease;
+}
+
+.food-card:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 12px 30px rgba(120,90,25,.08);
+}
+
+.meal-label {
+  font-size: 10px;
+
+  color: #a36b13;
+
+  text-transform: uppercase;
+
+  font-weight: 900;
+
+  letter-spacing: .08em;
+}
+
+.food-name {
+  font-size: 17px;
+
+  font-weight: 850;
+
+  margin: 4px 0;
+}
+
+.food-reason {
+  color: #706348;
+
+  font-size: 13px;
+}
+
+
+/* =========================
+   PACKING
+========================= */
+
+.packing-card {
+  border:
+    1px solid #ccebd8;
+
+  background:
+    linear-gradient(
+      145deg,
+      #f6fff9,
+      #effaf3
+    );
+
+  border-radius: 20px;
+
+  padding: 19px;
+}
+
+.packing-list {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2,minmax(0,1fr));
+
+  gap: 4px 20px;
+
+  list-style: none;
+
+  padding: 0;
+
+  margin: 0;
+}
+
+.packing-list li {
+  display: flex;
+
+  gap: 9px;
+
+  align-items: flex-start;
+
+  padding: 9px 0;
+
+  color: #315440;
+
+  font-size: 14px;
+}
+
+.check {
+  width: 20px;
+  height: 20px;
+
+  display: grid;
+
+  place-items: center;
+
+  flex: 0 0 20px;
+
+  border-radius: 50%;
+
+  background: #dcf7e7;
+
+  color: #169353;
+
+  font-size: 12px;
+
+  font-weight: 950;
+}
+
+
+/* =========================
+   REASONING
+========================= */
+
+.reason-box {
+  border:
+    1px solid #ddd6fa;
+
+  background:
+    linear-gradient(
+      145deg,
+      #fcfaff,
+      #f6f1ff
+    );
+
+  border-radius: 20px;
+
+  padding: 20px;
+}
+
+.reason-list {
+  margin: 0;
+
+  padding-left: 20px;
+
+  color: #514a67;
+}
+
+.reason-list li {
+  margin: 8px 0;
+}
+
+
+/* =========================
+   FEATURES
+========================= */
+
+.feature-strip {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4,1fr);
+
+  gap: 12px;
+
+  margin-top: 5px;
+}
+
+.feature-strip > div {
+  background:
+    rgba(255,255,255,.78);
+
+  border:
+    1px solid var(--line);
+
+  border-radius: 19px;
+
+  padding: 18px;
+
+  box-shadow: var(--shadow-sm);
+
+  transition: .18s ease;
+}
+
+.feature-strip > div:hover {
+  transform: translateY(-2px);
+}
+
+.feature-strip span {
+  font-size: 22px;
+
+  display: block;
+
+  margin-bottom: 8px;
+}
+
+.feature-strip strong {
+  display: block;
+
+  font-size: 14px;
+}
+
+.feature-strip small {
+  color: var(--muted);
+
+  display: block;
+
+  margin-top: 3px;
+
+  font-size: 12px;
+}
+
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 980px) {
+
+  .summary-grid {
+    grid-template-columns:
+      repeat(3,1fr);
+  }
+
+  .feature-strip {
+    grid-template-columns:
+      repeat(2,1fr);
+  }
+
+}
+
+@media (max-width: 680px) {
+
+  .hero {
+    padding:
+      46px 18px 88px;
+  }
+
+  .hero-inner {
+    align-items: flex-start;
+  }
+
+  .brand-mark {
+    width: 50px;
+    height: 50px;
+
+    flex-basis: 50px;
+
+    border-radius: 16px;
+
+    font-size: 23px;
+  }
+
+  .container {
+    width:
+      min(100% - 20px,1180px);
+
+    margin-top: -30px;
+  }
+
+  .card,
+  .planner-card {
+    padding: 20px;
+
+    border-radius: 20px;
+  }
+
+  .summary-grid {
+    grid-template-columns:
+      repeat(2,1fr);
+  }
+
+  .packing-list {
+    grid-template-columns: 1fr;
+  }
+
+  .feature-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .timeline {
+    padding-left: 55px;
+  }
+
+  .planner-actions {
+    align-items: flex-start;
+
+    flex-direction: column;
+  }
+
+  .primary-button {
+    width: 100%;
+
+    justify-content: center;
+  }
+
+}
+
+@media (max-width: 430px) {
+
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero h1 {
+    font-size: 38px;
+  }
+
+  .hero p {
+    font-size: 14px;
+  }
+
+}
