@@ -7,7 +7,7 @@ and call application tools for retrieval and database actions.
 
 import json
 import os
-from openai import OpenAI
+from databricks_openai import DatabricksOpenAI
 
 from databricks.sdk import WorkspaceClient
 
@@ -21,9 +21,8 @@ MODEL_ENDPOINT = os.getenv(
 
 workspace = WorkspaceClient()
 
-client = OpenAI(
-    api_key=os.environ.get("DATABRICKS_TOKEN"),
-    base_url=f"{os.environ.get('DATABRICKS_HOST', '').rstrip('/')}/serving-endpoints",
+client = DatabricksOpenAI(
+    workspace_client=workspace
 )
 
 
