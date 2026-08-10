@@ -2,7 +2,6 @@
 <html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
 
     <meta
@@ -16,43 +15,21 @@
         rel="stylesheet"
         href="{{ url_for('static', filename='style.css') }}"
     >
-
 </head>
-
 
 <body>
 
-
-    <!-- =====================================================
-         HEADER
-         ===================================================== -->
-
     <header class="header">
-
-        <h1>
-            🌎 AI Trip & Outdoor Activity Planner
-        </h1>
+        <h1>🌎 AI Trip & Outdoor Activity Planner</h1>
 
         <p>
             Plan smarter trips with AI-powered
             itineraries, weather intelligence,
             travel knowledge and personalized planning.
         </p>
-
     </header>
 
-
-
-    <!-- =====================================================
-         MAIN CONTENT
-         ===================================================== -->
-
     <main class="container">
-
-
-        <!-- =================================================
-             PLANNER
-             ================================================= -->
 
         <section class="card planner-card">
 
@@ -63,26 +40,20 @@
                 </div>
 
                 <div>
-
-                    <h2>
-                        Plan Your Next Adventure
-                    </h2>
+                    <h2>Plan Your Next Adventure</h2>
 
                     <p>
                         Tell the AI agent what you want
                         from your trip.
                     </p>
-
                 </div>
 
             </div>
-
 
             <textarea
                 id="message"
                 placeholder="Example: Plan a 5-day trip to New York with outdoor activities, Indian food, a reasonable budget, and weather-aware scheduling."
             ></textarea>
-
 
             <button
                 id="planButton"
@@ -90,9 +61,6 @@
             >
                 ✨ Plan My Trip
             </button>
-
-
-            <!-- Example prompts -->
 
             <div class="examples">
 
@@ -105,7 +73,6 @@
                     🏙️ Chicago 3-day trip
                 </div>
 
-
                 <div
                     class="example"
                     onclick="useExample(
@@ -114,7 +81,6 @@
                 >
                     🌵 Austin weekend
                 </div>
-
 
                 <div
                     class="example"
@@ -125,7 +91,6 @@
                     🗽 New York + Food
                 </div>
 
-
                 <div
                     class="example"
                     onclick="useExample(
@@ -134,7 +99,6 @@
                 >
                     🎒 Packing list
                 </div>
-
 
                 <div
                     class="example"
@@ -149,26 +113,17 @@
 
         </section>
 
-
-
-        <!-- =================================================
-             TRIP SUMMARY
-             ================================================= -->
-
         <section
             class="card"
             id="tripSummaryCard"
         >
 
-            <h2>
-                🧭 Trip Summary
-            </h2>
+            <h2>🧭 Trip Summary</h2>
 
             <p>
                 Your trip overview will appear here
                 after the AI creates your plan.
             </p>
-
 
             <div
                 id="tripSummary"
@@ -176,7 +131,6 @@
             >
 
                 <div class="summary-item">
-
                     <span class="label">
                         Destination
                     </span>
@@ -187,12 +141,9 @@
                     >
                         —
                     </span>
-
                 </div>
 
-
                 <div class="summary-item">
-
                     <span class="label">
                         Duration
                     </span>
@@ -203,12 +154,9 @@
                     >
                         —
                     </span>
-
                 </div>
 
-
                 <div class="summary-item">
-
                     <span class="label">
                         Weather
                     </span>
@@ -219,12 +167,9 @@
                     >
                         —
                     </span>
-
                 </div>
 
-
                 <div class="summary-item">
-
                     <span class="label">
                         Budget
                     </span>
@@ -235,12 +180,9 @@
                     >
                         —
                     </span>
-
                 </div>
 
-
                 <div class="summary-item">
-
                     <span class="label">
                         Food
                     </span>
@@ -251,30 +193,20 @@
                     >
                         —
                     </span>
-
                 </div>
 
             </div>
 
         </section>
 
-
-
-        <!-- =================================================
-             AI RESPONSE
-             ================================================= -->
-
         <section class="card">
 
-            <h2>
-                🤖 AI Planner
-            </h2>
+            <h2>🤖 AI Planner</h2>
 
             <p>
                 The AI agent will search travel knowledge,
                 check conditions and build your trip.
             </p>
-
 
             <div
                 id="response"
@@ -298,60 +230,40 @@
 
         </section>
 
-
-
-        <!-- =================================================
-             ITINERARY
-             ================================================= -->
-
         <section
             class="card"
             id="itineraryCard"
         >
 
-            <h2>
-                🗓️ Your Itinerary
-            </h2>
+            <h2>🗓️ Your Itinerary</h2>
 
             <p>
                 Your AI-generated day-by-day itinerary
                 will appear here.
             </p>
 
-
             <div id="itinerary">
 
                 <div class="result-card">
-
                     Your itinerary will be generated
                     by the AI agent.
-
                 </div>
 
             </div>
 
         </section>
 
-
-
-        <!-- =================================================
-             WEATHER
-             ================================================= -->
-
         <section
             class="card"
             id="weatherCard"
         >
 
-            <h2>
-                🌦️ Weather Intelligence
-            </h2>
+            <h2>🌦️ Weather Intelligence</h2>
 
             <p>
                 Weather and air-quality information
                 used by the AI planner.
             </p>
-
 
             <div id="weather">
 
@@ -368,26 +280,17 @@
 
         </section>
 
-
-
-        <!-- =================================================
-             FOOD PLANNER
-             ================================================= -->
-
         <section
             class="card"
             id="foodCard"
         >
 
-            <h2>
-                🍛 Food Planner
-            </h2>
+            <h2>🍛 Food Planner</h2>
 
             <p>
                 Personalized food recommendations
                 based on your trip preferences.
             </p>
-
 
             <div id="foodPlanner">
 
@@ -410,26 +313,17 @@
 
         </section>
 
-
-
-        <!-- =================================================
-             PACKING LIST
-             ================================================= -->
-
         <section
             class="card"
             id="packingCard"
         >
 
-            <h2>
-                🎒 Smart Packing List
-            </h2>
+            <h2>🎒 Smart Packing List</h2>
 
             <p>
                 The AI agent can create a packing list
                 based on activities and conditions.
             </p>
-
 
             <div id="packingList">
 
@@ -446,27 +340,18 @@
 
         </section>
 
-
-
-        <!-- =================================================
-             AI EXPLANATION
-             ================================================= -->
-
         <section
             class="card"
             id="reasonCard"
         >
 
-            <h2>
-                💡 Why AI Made These Decisions
-            </h2>
+            <h2>💡 Why AI Made These Decisions</h2>
 
             <p>
                 The agent explains important planning
                 decisions instead of simply giving
                 you an itinerary.
             </p>
-
 
             <div id="aiReason">
 
@@ -488,21 +373,11 @@
 
         </section>
 
-
-
-        <!-- =================================================
-             FEATURES
-             ================================================= -->
-
         <section class="card">
 
-            <h2>
-                ✨ What the Agent Can Do
-            </h2>
-
+            <h2>✨ What the Agent Can Do</h2>
 
             <div class="features">
-
 
                 <div class="feature">
 
@@ -516,7 +391,6 @@
 
                 </div>
 
-
                 <div class="feature">
 
                     <strong>
@@ -529,7 +403,6 @@
 
                 </div>
 
-
                 <div class="feature">
 
                     <strong>
@@ -540,7 +413,6 @@
                     itinerary items stored in Lakebase.
 
                 </div>
-
 
                 <div class="feature">
 
@@ -554,7 +426,6 @@
 
                 </div>
 
-
                 <div class="feature">
 
                     <strong>
@@ -565,7 +436,6 @@
                     weather and planned activities.
 
                 </div>
-
 
                 <div class="feature">
 
@@ -582,19 +452,11 @@
 
         </section>
 
-
     </main>
-
-
-
-    <!-- =====================================================
-         JAVASCRIPT
-         ===================================================== -->
 
     <script
         src="{{ url_for('static', filename='app.js') }}"
     ></script>
-
 
 </body>
 
