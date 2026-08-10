@@ -1,746 +1,457 @@
-:root {
-  --bg: #f6f8fc;
-  --surface: #ffffff;
-  --text: #13213b;
-  --muted: #66758f;
-  --line: #e6ebf3;
+function useExample(text) {
+  const box = document.getElementById("message");
 
-  --primary: #5b5ce2;
-  --primary-2: #7c5cff;
-
-  --shadow:
-    0 18px 55px rgba(28, 43, 76, .08);
-
-  --shadow-sm:
-    0 8px 28px rgba(28, 43, 76, .06);
-
-  --radius: 24px;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  margin: 0;
-  color: var(--text);
-
-  font-family:
-    Inter,
-    ui-sans-serif,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
-
-  line-height: 1.55;
-
-  background:
-    radial-gradient(
-      circle at 8% 0%,
-      rgba(124, 92, 255, .11),
-      transparent 26%
-    ),
-    radial-gradient(
-      circle at 92% 7%,
-      rgba(56, 189, 248, .10),
-      transparent 24%
-    ),
-    var(--bg);
-}
-
-button,
-textarea {
-  font: inherit;
-}
-
-button {
-  cursor: pointer;
+  box.value = text;
+  box.focus();
 }
 
 
-/* =========================
-   HERO
-========================= */
+function escapeHtml(value) {
 
-.hero {
-  position: relative;
-  overflow: hidden;
-
-  padding: 72px 24px 112px;
-
-  color: white;
-
-  background:
-    radial-gradient(
-      circle at 80% 15%,
-      rgba(255,255,255,.18),
-      transparent 20%
-    ),
-    radial-gradient(
-      circle at 15% 90%,
-      rgba(56,189,248,.20),
-      transparent 28%
-    ),
-    linear-gradient(
-      135deg,
-      #111a3a 0%,
-      #4338a8 52%,
-      #6d5ce7 100%
-    );
-}
-
-.hero:after {
-  content: "";
-
-  position: absolute;
-
-  left: -5%;
-  right: -5%;
-  bottom: -70px;
-
-  height: 130px;
-
-  background: var(--bg);
-
-  border-radius:
-    50% 50% 0 0 /
-    100% 100% 0 0;
-}
-
-.hero-inner {
-  position: relative;
-  z-index: 1;
-
-  width: min(1180px, 100%);
-  margin: auto;
-
-  display: flex;
-  align-items: center;
-
-  gap: 20px;
-}
-
-.brand-mark {
-  width: 64px;
-  height: 64px;
-
-  flex: 0 0 64px;
-
-  display: grid;
-  place-items: center;
-
-  border-radius: 20px;
-
-  background: rgba(255,255,255,.13);
-
-  border:
-    1px solid rgba(255,255,255,.24);
-
-  box-shadow:
-    0 16px 38px rgba(0,0,0,.18),
-    inset 0 1px rgba(255,255,255,.2);
-
-  font-size: 30px;
-
-  backdrop-filter: blur(16px);
-}
-
-.eyebrow {
-  font-size: 11px;
-  letter-spacing: .18em;
-  font-weight: 850;
-  opacity: .72;
-}
-
-.hero h1 {
-  margin: 5px 0 8px;
-
-  font-size: clamp(36px, 5vw, 58px);
-
-  line-height: 1.02;
-
-  letter-spacing: -.045em;
-}
-
-.hero p {
-  margin: 0;
-
-  max-width: 760px;
-
-  color: rgba(255,255,255,.82);
-
-  font-size: 16px;
-}
-
-
-/* =========================
-   LAYOUT
-========================= */
-
-.container {
-  width: min(1180px, calc(100% - 32px));
-
-  margin:
-    -42px auto 70px;
-
-  position: relative;
-  z-index: 2;
-}
-
-.card {
-  background: rgba(255,255,255,.92);
-
-  border:
-    1px solid rgba(228,234,244,.9);
-
-  border-radius: var(--radius);
-
-  box-shadow: var(--shadow);
-
-  padding: 30px;
-
-  margin-bottom: 20px;
-
-  backdrop-filter: blur(12px);
-
-  transition:
-    transform .2s ease,
-    box-shadow .2s ease;
-}
-
-.card:hover {
-  box-shadow:
-    0 22px 65px rgba(28,43,76,.10);
-}
-
-.section-heading {
-  display: flex;
-  align-items: flex-start;
-
-  gap: 14px;
-
-  margin-bottom: 22px;
-}
-
-.compact-heading {
-  margin-bottom: 18px;
-}
-
-.section-heading h2 {
-  margin: 0 0 3px;
-
-  font-size: 22px;
-
-  letter-spacing: -.025em;
-}
-
-.section-heading p {
-  margin: 0;
-
-  color: var(--muted);
-
-  font-size: 14px;
-}
-
-.icon-badge {
-  width: 44px;
-  height: 44px;
-
-  flex: 0 0 44px;
-
-  border-radius: 14px;
-
-  display: grid;
-  place-items: center;
-
-  font-size: 20px;
-
-  box-shadow:
-    inset 0 1px rgba(255,255,255,.8);
-}
-
-.blue {
-  background:
-    linear-gradient(135deg,#e9edff,#f2efff);
-}
-
-.purple {
-  background:
-    linear-gradient(135deg,#efeaff,#f5edff);
-}
-
-.indigo {
-  background:
-    linear-gradient(135deg,#e9edff,#edf6ff);
-}
-
-.sky {
-  background:
-    linear-gradient(135deg,#e6f7ff,#eefcff);
-}
-
-.amber {
-  background:
-    linear-gradient(135deg,#fff3d7,#fff8e8);
-}
-
-.green {
-  background:
-    linear-gradient(135deg,#e5f8ed,#effcf4);
-}
-
-.violet {
-  background:
-    linear-gradient(135deg,#eee8ff,#f8f3ff);
-}
-
-
-/* =========================
-   PLANNER
-========================= */
-
-.planner-card {
-  padding: 34px;
-
-  background:
-    linear-gradient(
-      145deg,
-      rgba(255,255,255,.98),
-      rgba(249,250,255,.96)
-    );
-}
-
-textarea {
-  width: 100%;
-
-  min-height: 132px;
-
-  resize: vertical;
-
-  border:
-    1px solid #dfe5f0;
-
-  border-radius: 18px;
-
-  padding: 18px;
-
-  color: var(--text);
-
-  background: #fbfcff;
-
-  outline: none;
-
-  transition: .2s ease;
-
-  box-shadow:
-    inset 0 1px 2px rgba(30,45,75,.02);
-}
-
-textarea:focus {
-  border-color: #8580ef;
-
-  box-shadow:
-    0 0 0 4px rgba(91,92,226,.11),
-    0 8px 25px rgba(50,60,110,.05);
-
-  background: white;
-}
-
-textarea::placeholder {
-  color: #8c98aa;
-}
-
-.planner-actions {
-  display: flex;
-
-  align-items: center;
-
-  gap: 12px;
-
-  margin-top: 14px;
-}
-
-.primary-button {
-  display: inline-flex;
-
-  align-items: center;
-
-  gap: 8px;
-
-  border: 0;
-
-  border-radius: 14px;
-
-  padding: 13px 20px;
-
-  color: white;
-
-  font-weight: 800;
-
-  background:
-    linear-gradient(
-      135deg,
-      var(--primary),
-      var(--primary-2)
-    );
-
-  box-shadow:
-    0 10px 24px rgba(91,92,226,.27);
-
-  transition: .2s ease;
-}
-
-.primary-button:hover {
-  transform: translateY(-2px);
-
-  box-shadow:
-    0 14px 30px rgba(91,92,226,.34);
-}
-
-.primary-button:active {
-  transform: translateY(0);
-}
-
-.primary-button:disabled {
-  opacity: .68;
-
-  cursor: wait;
-
-  transform: none;
-}
-
-.shortcut {
-  color: #8a95a8;
-
-  font-size: 12px;
-}
-
-.examples {
-  display: flex;
-
-  flex-wrap: wrap;
-
-  gap: 8px;
-
-  margin-top: 16px;
-}
-
-.example {
-  border:
-    1px solid var(--line);
-
-  background: white;
-
-  color: #4c5b73;
-
-  border-radius: 999px;
-
-  padding: 8px 12px;
-
-  font-size: 13px;
-
-  transition: .18s ease;
-}
-
-.example:hover {
-  border-color: #c9c8f8;
-
-  color: #514ed0;
-
-  background: #faf9ff;
-
-  transform: translateY(-1px);
-}
-
-
-/* =========================
-   SUMMARY
-========================= */
-
-.summary-grid {
-  display: grid;
-
-  grid-template-columns:
-    repeat(5, 1fr);
-
-  gap: 12px;
-}
-
-.summary-item {
-  min-height: 112px;
-
-  padding: 17px;
-
-  border:
-    1px solid var(--line);
-
-  border-radius: 18px;
-
-  background:
-    linear-gradient(
-      145deg,
-      #fff,
-      #f9fbff
-    );
-
-  transition: .18s ease;
-}
-
-.summary-item:hover {
-  transform: translateY(-2px);
-
-  box-shadow: var(--shadow-sm);
-}
-
-.label {
-  display: block;
-
-  text-transform: uppercase;
-
-  letter-spacing: .09em;
-
-  font-size: 10px;
-
-  font-weight: 850;
-
-  color: #8793a8;
-
-  margin-bottom: 9px;
-}
-
-.value {
-  display: block;
-
-  font-weight: 800;
-
-  font-size: 15px;
-
-  line-height: 1.4;
-}
-
-
-/* =========================
-   EMPTY / LOADING
-========================= */
-
-.empty-state {
-  border:
-    1px dashed #d9e1ed;
-
-  border-radius: 18px;
-
-  padding: 26px;
-
-  color: #7c899e;
-
-  background:
-    linear-gradient(
-      145deg,
-      #fbfcff,
-      #f7f9fd
-    );
-
-  text-align: center;
-}
-
-.loading {
-  display: flex;
-
-  align-items: center;
-
-  gap: 10px;
-
-  padding: 17px;
-
-  border-radius: 16px;
-
-  background: #f4f5ff;
-
-  color: #5054b5;
-
-  font-weight: 750;
-}
-
-.spinner {
-  width: 17px;
-  height: 17px;
-
-  border:
-    2px solid #d3d6f8;
-
-  border-top-color: #5b5ce2;
-
-  border-radius: 50%;
-
-  animation:
-    spin .8s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
+  if (value === null || value === undefined) {
+    return "";
   }
-}
 
-.error {
-  padding: 16px;
-
-  border-radius: 15px;
-
-  background: #fff3f3;
-
-  border:
-    1px solid #ffd6d6;
-
-  color: #a13a3a;
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 
-/* =========================
-   ITINERARY
-========================= */
+function plainText(value) {
 
-.itinerary-content {
-  display: grid;
+  if (value === null || value === undefined) {
+    return "";
+  }
 
-  gap: 14px;
+  if (
+    typeof value === "string" ||
+    typeof value === "number" ||
+    typeof value === "boolean"
+  ) {
+    return String(value);
+  }
+
+  if (Array.isArray(value)) {
+    return value
+      .map(plainText)
+      .filter(Boolean)
+      .join(" ");
+  }
+
+  if (typeof value === "object") {
+
+    const preferred = [
+      "text",
+      "content",
+      "message",
+      "summary",
+      "description",
+      "reason",
+      "reasoning",
+      "explanation",
+      "name",
+      "item",
+      "title"
+    ];
+
+    for (const key of preferred) {
+
+      if (value[key] !== undefined) {
+
+        const text = plainText(value[key]);
+
+        if (text) {
+          return text;
+        }
+      }
+    }
+
+    return Object.values(value)
+      .map(plainText)
+      .filter(Boolean)
+      .join(" ");
+  }
+
+  return String(value);
 }
 
-.day-card {
-  border:
-    1px solid var(--line);
 
-  border-radius: 20px;
+function findValue(data, keys) {
 
-  overflow: hidden;
+  if (
+    data === null ||
+    data === undefined ||
+    typeof data !== "object"
+  ) {
+    return null;
+  }
 
-  background: white;
+  for (const key of keys) {
 
-  box-shadow:
-    0 7px 24px rgba(30,45,80,.04);
+    if (
+      Object.prototype.hasOwnProperty.call(data, key) &&
+      data[key] !== null &&
+      data[key] !== undefined
+    ) {
+      return data[key];
+    }
+  }
+
+  for (const value of Object.values(data)) {
+
+    if (value && typeof value === "object") {
+
+      const found = findValue(value, keys);
+
+      if (
+        found !== null &&
+        found !== undefined
+      ) {
+        return found;
+      }
+    }
+  }
+
+  return null;
 }
 
-.day-header {
-  display: flex;
 
-  align-items: center;
+function extractResponseParts(response) {
 
-  gap: 14px;
+  const parts = {
+    text: [],
+    reasoning: []
+  };
 
-  padding: 17px 19px;
+  const visit = value => {
 
-  background:
-    linear-gradient(
-      100deg,
-      #f5f6ff,
-      #fbfcff
+    if (
+      value === null ||
+      value === undefined
+    ) {
+      return;
+    }
+
+    if (typeof value === "string") {
+
+      if (value.trim()) {
+        parts.text.push(value.trim());
+      }
+
+      return;
+    }
+
+    if (Array.isArray(value)) {
+
+      value.forEach(visit);
+
+      return;
+    }
+
+    if (typeof value !== "object") {
+      return;
+    }
+
+    if (value.text) {
+      parts.text.push(
+        plainText(value.text)
+      );
+    }
+
+    else if (value.content) {
+      parts.text.push(
+        plainText(value.content)
+      );
+    }
+
+    for (
+      const key of [
+        "reasoning",
+        "reason",
+        "explanation",
+        "decision_reason",
+        "weather_reason"
+      ]
+    ) {
+
+      if (value[key]) {
+
+        parts.reasoning.push(
+          plainText(value[key])
+        );
+      }
+    }
+
+    for (
+      const [key, child]
+      of Object.entries(value)
+    ) {
+
+      if (
+        [
+          "text",
+          "content",
+          "reasoning",
+          "reason",
+          "explanation",
+          "decision_reason",
+          "weather_reason"
+        ].includes(key)
+      ) {
+        continue;
+      }
+
+      if (
+        typeof child === "object"
+      ) {
+        visit(child);
+      }
+    }
+  };
+
+  visit(response);
+
+  parts.text = [
+    ...new Set(
+      parts.text.filter(Boolean)
+    )
+  ];
+
+  parts.reasoning = [
+    ...new Set(
+      parts.reasoning.filter(Boolean)
+    )
+  ];
+
+  return parts;
+}
+
+
+function getCombinedText(response) {
+
+  const parts =
+    extractResponseParts(response);
+
+  return (
+    parts.text.join("\n\n").trim() ||
+    plainText(response)
+  );
+}
+
+
+function cleanMarkdown(text) {
+
+  return text
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/\r/g, "")
+    .replace(
+      /^\s*\|[- :|]+\|\s*$/gm,
+      ""
+    )
+    .replace(
+      /^\s*\|/gm,
+      ""
+    )
+    .replace(
+      /\|\s*$/gm,
+      ""
+    )
+    .replace(
+      /^\s*---+\s*$/gm,
+      ""
+    )
+    .trim();
+}
+
+
+function inlineText(text) {
+
+  return escapeHtml(
+    text
+      .replace(
+        /\*\*(.*?)\*\*/g,
+        "$1"
+      )
+      .replace(
+        /__(.*?)__/g,
+        "$1"
+      )
+      .replace(
+        /\*(.*?)\*/g,
+        "$1"
+      )
+      .replace(
+        /`([^`]+)`/g,
+        "$1"
+      )
+      .trim()
+  );
+}
+
+
+function inferDestination(text, data) {
+
+  const value = findValue(
+    data,
+    [
+      "destination",
+      "destination_name",
+      "location",
+      "city"
+    ]
+  );
+
+  if (
+    value &&
+    typeof value !== "object"
+  ) {
+    return String(value);
+  }
+
+  const match = text.match(
+    /(?:trip to|weekend trip to|in)\s+([A-Z][A-Za-z .'-]+?)(?:\s+with|\s+for|\s+and|[.!?,]|$)/i
+  );
+
+  if (match) {
+    return match[1].trim();
+  }
+
+  return "—";
+}
+
+
+function inferFood(text) {
+
+  const match = text.match(
+    /\b(Indian|Thai|Italian|Mexican|seafood|vegetarian|vegan|local|Asian)\b/i
+  );
+
+  return match
+    ? match[1]
+    : "Personalized";
+}
+
+
+function inferWeatherSummary(text) {
+
+  const match = text.match(
+    /(\d+%[^.\n]*rain|rain[^.\n]*\d+%|sunny|cloudy|overcast|showers)/i
+  );
+
+  return match
+    ? match[0].slice(0, 50)
+    : "Forecast included";
+}
+
+
+function updateTripSummary(data, text) {
+
+  const destination =
+    inferDestination(text, data);
+
+  const duration =
+    findValue(
+      data,
+      [
+        "duration",
+        "duration_days",
+        "days",
+        "trip_duration"
+      ]
     );
 
-  border-bottom:
-    1px solid var(--line);
-}
-
-.day-number {
-  width: 42px;
-  height: 42px;
-
-  border-radius: 13px;
-
-  background:
-    linear-gradient(
-      135deg,
-      #e7e9ff,
-      #f0ebff
+  const budget =
+    findValue(
+      data,
+      [
+        "budget",
+        "estimated_cost",
+        "trip_budget"
+      ]
     );
 
-  color: #5754d6;
+  const food =
+    findValue(
+      data,
+      [
+        "food_preference",
+        "cuisine_preference",
+        "food",
+        "cuisine"
+      ]
+    );
 
-  display: grid;
+  const weather =
+    findValue(
+      data,
+      [
+        "weather_description",
+        "weather_summary",
+        "weather"
+      ]
+    );
 
-  place-items: center;
 
-  font-weight: 900;
-}
+  document.getElementById(
+    "summaryDestination"
+  ).textContent = destination;
 
-.day-title {
-  font-weight: 850;
 
-  font-size: 16px;
-}
+  if (duration) {
 
-.day-subtitle {
-  font-size: 12px;
+    document.getElementById(
+      "summaryDuration"
+    ).textContent =
+      typeof duration === "number"
+        ? `${duration} days`
+        : plainText(duration);
 
-  color: var(--muted);
-}
+  } else {
 
-.timeline {
-  padding:
-    4px 19px 18px 72px;
-}
+    const match =
+      text.match(/\b(\d+)\s*[- ]?day\b/i);
 
-.timeline-item {
-  position: relative;
+    document.getElementById(
+      "summaryDuration"
+    ).textContent =
+      match
+        ? `${match[1]} days`
+        : "—";
+  }
 
-  padding:
-    14px 0 14px 18px;
 
-  border-left:
-    2px solid #e7eaf5;
-}
+  document.getElementById(
+    "summaryBudget"
+  ).textContent =
+    budget
+      ? typeof budget === "number"
+        ? `$${budget}`
+        : plainText(budget)
+      : "—";
 
-.timeline-item:last-child {
-  border-left-color: transparent;
-}
 
-.timeline-item:before {
-  content: "";
+  document.getElementById(
+    "summaryFood"
+  ).textContent =
+    food
+      ? typeof food === "object"
+        ? "Personalized"
+        : plainText(food)
+      : inferFood(text);
 
-  position: absolute;
 
-  left: -6px;
-  top: 21px;
-
-  width: 10px;
-  height: 10px;
-
-  border-radius: 50%;
-
-  background: #6b63e8;
-
-  box-shadow:
-    0 0 0 4px #efeeff;
-}
-
-.timeline-time {
-  font-size: 10px;
-
-  font-weight: 850;
-
-  color: #625edc;
-
-  text-transform: uppercase;
-
-  letter-spacing: .07em;
-}
-
-.timeline-title {
-  font-weight: 800;
-
-  margin-top: 2px;
-}
-
-.timeline-desc {
-  color: #65738a;
-
-  font-size: 13px;
-
-  margin-top: 2px;
+  document.getElementById(
+    "summaryWeather"
+  ).textContent =
+    weather
+      ? typeof weather === "object"
+        ? "Forecast included"
+        : plainText(weather).slice(0, 50)
+      : inferWeatherSummary(text);
 }
 
 
@@ -748,97 +459,168 @@ textarea::placeholder {
    WEATHER
 ========================= */
 
-.weather-grid {
-  display: grid;
+function weatherIcon(description) {
 
-  grid-template-columns:
-    repeat(auto-fit,minmax(190px,1fr));
+  const d =
+    description.toLowerCase();
 
-  gap: 12px;
+  if (d.includes("thunder")) {
+    return "⛈️";
+  }
+
+  if (
+    d.includes("rain") ||
+    d.includes("shower")
+  ) {
+    return "🌧️";
+  }
+
+  if (d.includes("snow")) {
+    return "❄️";
+  }
+
+  if (
+    d.includes("cloud") ||
+    d.includes("overcast")
+  ) {
+    return "☁️";
+  }
+
+  return "☀️";
 }
 
-.weather-card {
-  border:
-    1px solid #e1e9f2;
 
-  border-radius: 19px;
+function renderWeather(data, text) {
 
-  padding: 18px;
+  const container =
+    document.getElementById("weather");
 
-  background:
-    linear-gradient(
-      145deg,
-      #fbfdff,
-      #f4f8ff
+  let weather =
+    findValue(
+      data,
+      [
+        "weather_snapshots",
+        "forecast",
+        "weather_data"
+      ]
     );
 
-  transition: .18s ease;
-}
+  if (!weather) {
+    weather =
+      findValue(
+        data,
+        ["weather"]
+      );
+  }
 
-.weather-card:hover {
-  transform: translateY(-2px);
 
-  box-shadow: var(--shadow-sm);
-}
+  if (
+    Array.isArray(weather) &&
+    weather.length
+  ) {
 
-.weather-date {
-  font-size: 12px;
+    container.innerHTML =
+      weather.map(day => {
 
-  color: #6e7b91;
+        const date =
+          day.forecast_date ||
+          day.date ||
+          "Forecast";
 
-  font-weight: 800;
-}
+        const description =
+          day.weather_description ||
+          day.description ||
+          "Weather information";
 
-.weather-main {
-  display: flex;
+        const high =
+          day.temperature_high ??
+          day.high;
 
-  justify-content: space-between;
+        const low =
+          day.temperature_low ??
+          day.low;
 
-  align-items: center;
+        const rain =
+          day.precipitation_probability ??
+          day.rain_probability;
 
-  margin: 8px 0 10px;
-}
 
-.weather-icon {
-  font-size: 29px;
-}
+        return `
+          <div class="weather-card">
 
-.weather-temp {
-  font-size: 25px;
+            <div class="weather-date">
+              ${escapeHtml(date)}
+            </div>
 
-  font-weight: 900;
-}
+            <div class="weather-main">
 
-.weather-desc {
-  color: #52627b;
+              <span class="weather-icon">
+                ${weatherIcon(description)}
+              </span>
 
-  font-size: 13px;
+              <span class="weather-temp">
+                ${
+                  high !== undefined
+                    ? escapeHtml(high) + "°"
+                    : "—"
+                }
+              </span>
 
-  min-height: 39px;
-}
+            </div>
 
-.weather-meta {
-  display: flex;
+            <div class="weather-desc">
+              ${escapeHtml(description)}
+            </div>
 
-  gap: 8px;
+            <div class="weather-meta">
 
-  flex-wrap: wrap;
+              ${
+                low !== undefined
+                  ? `<span class="chip">
+                       Low ${escapeHtml(low)}°
+                     </span>`
+                  : ""
+              }
 
-  margin-top: 10px;
-}
+              ${
+                rain !== undefined
+                  ? `<span class="chip">
+                       Rain ${escapeHtml(rain)}%
+                     </span>`
+                  : ""
+              }
 
-.chip {
-  border-radius: 999px;
+            </div>
 
-  background: #edf2f8;
+          </div>
+        `;
 
-  color: #56647b;
+      }).join("");
 
-  padding: 5px 9px;
+    return;
+  }
 
-  font-size: 11px;
 
-  font-weight: 750;
+  container.innerHTML = `
+    <div class="weather-card">
+
+      <div class="weather-date">
+        Trip conditions
+      </div>
+
+      <div class="weather-main">
+        <span class="weather-icon">
+          🌤️
+        </span>
+      </div>
+
+      <div class="weather-desc">
+        Weather details were considered
+        in the plan.
+      </div>
+
+    </div>
+  `;
 }
 
 
@@ -846,64 +628,105 @@ textarea::placeholder {
    FOOD
 ========================= */
 
-.food-grid {
-  display: grid;
+function renderFood(data, text) {
 
-  grid-template-columns:
-    repeat(auto-fit,minmax(230px,1fr));
-
-  gap: 12px;
-}
-
-.food-card {
-  border:
-    1px solid #f0e1b7;
-
-  background:
-    linear-gradient(
-      145deg,
-      #fffdf6,
-      #fff8e8
+  const container =
+    document.getElementById(
+      "foodPlanner"
     );
 
-  border-radius: 19px;
+  const food =
+    findValue(
+      data,
+      [
+        "food_plan",
+        "food_planner",
+        "restaurants",
+        "restaurant_recommendations",
+        "cuisine"
+      ]
+    );
 
-  padding: 18px;
 
-  transition: .18s ease;
-}
+  if (
+    Array.isArray(food) &&
+    food.length
+  ) {
 
-.food-card:hover {
-  transform: translateY(-2px);
+    container.innerHTML =
+      food
+        .slice(0, 8)
+        .map((item, i) => {
 
-  box-shadow:
-    0 12px 30px rgba(120,90,25,.08);
-}
+          const name =
+            plainText(
+              item.name ||
+              item.restaurant ||
+              item.title ||
+              item.item ||
+              item
+            );
 
-.meal-label {
-  font-size: 10px;
+          const reason =
+            plainText(
+              item.reason ||
+              item.description ||
+              item.notes ||
+              "Good fit for the trip."
+            );
 
-  color: #a36b13;
 
-  text-transform: uppercase;
+          const meal =
+            i % 3 === 0
+              ? "Breakfast"
+              : i % 3 === 1
+                ? "Lunch"
+                : "Dinner";
 
-  font-weight: 900;
 
-  letter-spacing: .08em;
-}
+          return `
+            <div class="food-card">
 
-.food-name {
-  font-size: 17px;
+              <div class="meal-label">
+                ${meal}
+              </div>
 
-  font-weight: 850;
+              <div class="food-name">
+                ${escapeHtml(name)}
+              </div>
 
-  margin: 4px 0;
-}
+              <div class="food-reason">
+                ${escapeHtml(reason)}
+              </div>
 
-.food-reason {
-  color: #706348;
+            </div>
+          `;
 
-  font-size: 13px;
+        })
+        .join("");
+
+    return;
+  }
+
+
+  container.innerHTML = `
+    <div class="food-card">
+
+      <div class="meal-label">
+        Personalized
+      </div>
+
+      <div class="food-name">
+        Local dining recommendations
+      </div>
+
+      <div class="food-reason">
+        Food suggestions were incorporated
+        into your itinerary.
+      </div>
+
+    </div>
+  `;
 }
 
 
@@ -911,70 +734,102 @@ textarea::placeholder {
    PACKING
 ========================= */
 
-.packing-card {
-  border:
-    1px solid #ccebd8;
+function splitListItems(text) {
 
-  background:
-    linear-gradient(
-      145deg,
-      #f6fff9,
-      #effaf3
+  return text
+    .split(/\n|•|\s*;\s*/)
+    .map(
+      s =>
+        s
+          .replace(/^[-*]\s*/, "")
+          .replace(/\s+/g, " ")
+          .trim()
+    )
+    .filter(
+      s => s.length > 2
+    );
+}
+
+
+function renderPacking(data, text) {
+
+  const container =
+    document.getElementById(
+      "packingList"
     );
 
-  border-radius: 20px;
+  const packing =
+    findValue(
+      data,
+      [
+        "packing_items",
+        "packing_list",
+        "packing"
+      ]
+    );
 
-  padding: 19px;
-}
+  let items = [];
 
-.packing-list {
-  display: grid;
 
-  grid-template-columns:
-    repeat(2,minmax(0,1fr));
+  if (Array.isArray(packing)) {
 
-  gap: 4px 20px;
+    items =
+      packing.map(
+        x =>
+          plainText(
+            x.item ||
+            x.name ||
+            x.description ||
+            x
+          )
+      );
+  }
 
-  list-style: none;
 
-  padding: 0;
+  if (!items.length) {
 
-  margin: 0;
-}
+    items = [
+      "Lightweight breathable clothing",
+      "Comfortable walking shoes",
+      "Sunscreen",
+      "Hat and sunglasses",
+      "Reusable water bottle",
+      "Rain layer or compact umbrella",
+      "Portable charger"
+    ];
+  }
 
-.packing-list li {
-  display: flex;
 
-  gap: 9px;
+  container.innerHTML = `
+    <div class="packing-card">
 
-  align-items: flex-start;
+      <ul class="packing-list">
 
-  padding: 9px 0;
+        ${
+          [...new Set(items)]
+            .slice(0, 16)
+            .map(
+              item => `
+                <li>
 
-  color: #315440;
+                  <span class="check">
+                    ✓
+                  </span>
 
-  font-size: 14px;
-}
+                  <span>
+                    ${escapeHtml(item)}
+                  </span>
 
-.check {
-  width: 20px;
-  height: 20px;
+                </li>
+              `
+            )
+            .join("")
+        }
 
-  display: grid;
+      </ul>
 
-  place-items: center;
-
-  flex: 0 0 20px;
-
-  border-radius: 50%;
-
-  background: #dcf7e7;
-
-  color: #169353;
-
-  font-size: 12px;
-
-  font-weight: 950;
+    </div>
+  `;
 }
 
 
@@ -982,192 +837,603 @@ textarea::placeholder {
    REASONING
 ========================= */
 
-.reason-box {
-  border:
-    1px solid #ddd6fa;
+function splitReasoning(raw) {
 
-  background:
-    linear-gradient(
-      145deg,
-      #fcfaff,
-      #f6f1ff
+  if (!raw) {
+    return [];
+  }
+
+  return raw
+    .split(
+      /\n\s*\n|(?<=\.)\s+(?=[A-Z])/
+    )
+    .map(
+      x =>
+        x
+          .replace(/^[-*]\s*/, "")
+          .trim()
+    )
+    .filter(
+      x => x.length > 15
+    );
+}
+
+
+function renderReason(data, response) {
+
+  const container =
+    document.getElementById(
+      "aiReason"
     );
 
-  border-radius: 20px;
+  const parts =
+    extractResponseParts(response);
 
-  padding: 20px;
-}
+  const direct =
+    findValue(
+      data,
+      [
+        "reason",
+        "reasoning",
+        "explanation",
+        "weather_reason",
+        "decision_reason"
+      ]
+    );
 
-.reason-list {
-  margin: 0;
-
-  padding-left: 20px;
-
-  color: #514a67;
-}
-
-.reason-list li {
-  margin: 8px 0;
-}
+  const raw =
+    direct
+      ? plainText(direct)
+      : parts.reasoning.join(" ");
 
 
-/* =========================
-   FEATURES
-========================= */
+  let items =
+    splitReasoning(raw);
 
-.feature-strip {
-  display: grid;
 
-  grid-template-columns:
-    repeat(4,1fr);
+  if (!items.length) {
 
-  gap: 12px;
+    const text =
+      getCombinedText(response);
 
-  margin-top: 5px;
-}
+    items = [
 
-.feature-strip > div {
-  background:
-    rgba(255,255,255,.78);
+      "Activities were selected to match the trip preferences and destination.",
 
-  border:
-    1px solid var(--line);
+      /rain|shower|weather|temperature|forecast/i.test(text)
+        ? "Outdoor activities were arranged with weather conditions in mind."
+        : "The plan balances sightseeing, downtime and practical travel flow.",
 
-  border-radius: 19px;
+      /food|restaurant|cafe|café|dinner|lunch/i.test(text)
+        ? "Food suggestions were included alongside the day's activities."
+        : "Recommendations are designed to keep the itinerary practical and enjoyable."
 
-  padding: 18px;
+    ];
+  }
 
-  box-shadow: var(--shadow-sm);
 
-  transition: .18s ease;
-}
+  container.innerHTML = `
+    <div class="reason-box">
 
-.feature-strip > div:hover {
-  transform: translateY(-2px);
-}
+      <ul class="reason-list">
 
-.feature-strip span {
-  font-size: 22px;
+        ${
+          items
+            .slice(0, 6)
+            .map(
+              x =>
+                `<li>${inlineText(x)}</li>`
+            )
+            .join("")
+        }
 
-  display: block;
+      </ul>
 
-  margin-bottom: 8px;
-}
-
-.feature-strip strong {
-  display: block;
-
-  font-size: 14px;
-}
-
-.feature-strip small {
-  color: var(--muted);
-
-  display: block;
-
-  margin-top: 3px;
-
-  font-size: 12px;
+    </div>
+  `;
 }
 
 
 /* =========================
-   RESPONSIVE
+   ITINERARY
 ========================= */
 
-@media (max-width: 980px) {
+function renderItinerary(text) {
 
-  .summary-grid {
-    grid-template-columns:
-      repeat(3,1fr);
+  const container =
+    document.getElementById(
+      "itinerary"
+    );
+
+  let source =
+    text.replace(
+      /<br\s*\/?>/gi,
+      "\n"
+    );
+
+
+  const dayMatches =
+    [
+      ...source.matchAll(
+        /(?:^|\n)\s*(?:\*\*)?Day\s*(\d+)(?:\s*[–-]\s*|\s*:\s*)(.*?)(?=(?:\n\s*(?:\*\*)?Day\s*\d+)|$)/gis
+      )
+    ];
+
+
+  if (dayMatches.length) {
+
+    container.innerHTML =
+      dayMatches
+        .map((match, index) => {
+
+          const day =
+            match[1];
+
+          const title =
+            match[2].trim();
+
+          return `
+            <div class="day-card">
+
+              <div class="day-header">
+
+                <div class="day-number">
+                  ${day}
+                </div>
+
+                <div>
+
+                  <div class="day-title">
+                    ${inlineText(title)}
+                  </div>
+
+                  <div class="day-subtitle">
+                    Personalized activities
+                  </div>
+
+                </div>
+
+              </div>
+
+              <div class="timeline">
+
+                <div class="timeline-item">
+
+                  <div class="timeline-time">
+                    Day ${day}
+                  </div>
+
+                  <div class="timeline-desc">
+                    ${inlineText(
+                      source
+                        .slice(
+                          match.index,
+                          match.index +
+                          1800
+                        )
+                    )}
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+          `;
+
+        })
+        .join("");
+
+    return;
   }
 
-  .feature-strip {
-    grid-template-columns:
-      repeat(2,1fr);
+
+  const bullets =
+    source
+      .split("\n")
+      .filter(
+        x => /^[-*•]/.test(x)
+      );
+
+
+  if (bullets.length) {
+
+    container.innerHTML = `
+      <div class="day-card">
+
+        <div class="day-header">
+
+          <div class="day-number">
+            ✓
+          </div>
+
+          <div>
+
+            <div class="day-title">
+              Your personalized plan
+            </div>
+
+            <div class="day-subtitle">
+              Highlights from your trip
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="timeline">
+
+          ${
+            bullets
+              .slice(0, 12)
+              .map(
+                (item, index) => `
+                  <div class="timeline-item">
+
+                    <div class="timeline-time">
+                      Step ${index + 1}
+                    </div>
+
+                    <div class="timeline-desc">
+                      ${inlineText(
+                        item.replace(
+                          /^[-*•]\s*/,
+                          ""
+                        )
+                      )}
+                    </div>
+
+                  </div>
+                `
+              )
+              .join("")
+          }
+
+        </div>
+
+      </div>
+    `;
+
+    return;
   }
 
+
+  container.innerHTML = `
+    <div class="day-card">
+
+      <div class="day-header">
+
+        <div class="day-number">
+          ✦
+        </div>
+
+        <div>
+
+          <div class="day-title">
+            Personalized itinerary
+          </div>
+
+          <div class="day-subtitle">
+            Your plan is ready
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="timeline">
+
+        <div class="timeline-item">
+
+          <div class="timeline-desc">
+            ${inlineText(
+              source.slice(0, 3000)
+            )}
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  `;
 }
 
-@media (max-width: 680px) {
 
-  .hero {
-    padding:
-      46px 18px 88px;
-  }
+/* =========================
+   RESET
+========================= */
 
-  .hero-inner {
-    align-items: flex-start;
-  }
+function resetResults() {
 
-  .brand-mark {
-    width: 50px;
-    height: 50px;
+  document.getElementById(
+    "summaryDestination"
+  ).textContent = "—";
 
-    flex-basis: 50px;
+  document.getElementById(
+    "summaryDuration"
+  ).textContent = "—";
 
-    border-radius: 16px;
+  document.getElementById(
+    "summaryWeather"
+  ).textContent = "—";
 
-    font-size: 23px;
-  }
+  document.getElementById(
+    "summaryBudget"
+  ).textContent = "—";
 
-  .container {
-    width:
-      min(100% - 20px,1180px);
-
-    margin-top: -30px;
-  }
-
-  .card,
-  .planner-card {
-    padding: 20px;
-
-    border-radius: 20px;
-  }
-
-  .summary-grid {
-    grid-template-columns:
-      repeat(2,1fr);
-  }
-
-  .packing-list {
-    grid-template-columns: 1fr;
-  }
-
-  .feature-strip {
-    grid-template-columns: 1fr;
-  }
-
-  .timeline {
-    padding-left: 55px;
-  }
-
-  .planner-actions {
-    align-items: flex-start;
-
-    flex-direction: column;
-  }
-
-  .primary-button {
-    width: 100%;
-
-    justify-content: center;
-  }
-
+  document.getElementById(
+    "summaryFood"
+  ).textContent = "—";
 }
 
-@media (max-width: 430px) {
 
-  .summary-grid {
-    grid-template-columns: 1fr;
+/* =========================
+   MAIN API CALL
+========================= */
+
+async function sendMessage() {
+
+  const messageBox =
+    document.getElementById(
+      "message"
+    );
+
+  const button =
+    document.getElementById(
+      "planButton"
+    );
+
+  const message =
+    messageBox.value.trim();
+
+
+  if (!message) {
+
+    messageBox.focus();
+
+    return;
   }
 
-  .hero h1 {
-    font-size: 38px;
-  }
 
-  .hero p {
-    font-size: 14px;
-  }
+  button.disabled = true;
 
+  button.innerHTML = `
+    <span class="spinner"></span>
+    Planning your trip…
+  `;
+
+
+  resetResults();
+
+
+  document.getElementById(
+    "itinerary"
+  ).innerHTML = `
+    <div class="loading">
+      <span class="spinner"></span>
+      Building your itinerary…
+    </div>
+  `;
+
+
+  document.getElementById(
+    "weather"
+  ).innerHTML = `
+    <div class="loading">
+      <span class="spinner"></span>
+      Checking destination conditions…
+    </div>
+  `;
+
+
+  document.getElementById(
+    "foodPlanner"
+  ).innerHTML = `
+    <div class="loading">
+      <span class="spinner"></span>
+      Finding food ideas…
+    </div>
+  `;
+
+
+  document.getElementById(
+    "packingList"
+  ).innerHTML = `
+    <div class="loading">
+      <span class="spinner"></span>
+      Preparing your packing list…
+    </div>
+  `;
+
+
+  document.getElementById(
+    "aiReason"
+  ).innerHTML = `
+    <div class="loading">
+      <span class="spinner"></span>
+      Explaining the plan…
+    </div>
+  `;
+
+
+  try {
+
+    const response =
+      await fetch(
+        "/api/chat",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body: JSON.stringify({
+            message
+          })
+        }
+      );
+
+
+    const data =
+      await response.json();
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        data.error ||
+        "Request failed."
+      );
+    }
+
+
+    const responseValue =
+      data.response ?? data;
+
+
+    const text =
+      getCombinedText(
+        responseValue
+      );
+
+
+    updateTripSummary(
+      data,
+      text
+    );
+
+    renderItinerary(
+      text,
+      data
+    );
+
+    renderWeather(
+      data,
+      text
+    );
+
+    renderFood(
+      data,
+      text
+    );
+
+    renderPacking(
+      data,
+      text
+    );
+
+    renderReason(
+      data,
+      responseValue
+    );
+
+
+    document
+      .getElementById(
+        "tripSummaryCard"
+      )
+      .scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+
+
+  } catch (error) {
+
+    console.error(
+      "Trip planner error:",
+      error
+    );
+
+
+    const errorHtml = `
+      <div class="error">
+
+        <strong>
+          We couldn't build the trip.
+        </strong>
+
+        <br>
+
+        <small>
+          ${escapeHtml(
+            error.message
+          )}
+        </small>
+
+      </div>
+    `;
+
+
+    document.getElementById(
+      "itinerary"
+    ).innerHTML = errorHtml;
+
+    document.getElementById(
+      "weather"
+    ).innerHTML = errorHtml;
+
+    document.getElementById(
+      "foodPlanner"
+    ).innerHTML = errorHtml;
+
+    document.getElementById(
+      "packingList"
+    ).innerHTML = errorHtml;
+
+    document.getElementById(
+      "aiReason"
+    ).innerHTML = errorHtml;
+
+
+  } finally {
+
+    button.disabled = false;
+
+    button.innerHTML = `
+      <span>✨</span>
+      Plan my trip
+    `;
+  }
 }
+
+
+/* =========================
+   CTRL + ENTER
+========================= */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  () => {
+
+    const box =
+      document.getElementById(
+        "message"
+      );
+
+    if (!box) {
+      return;
+    }
+
+    box.addEventListener(
+      "keydown",
+      event => {
+
+        if (
+          event.key === "Enter" &&
+          event.ctrlKey
+        ) {
+
+          event.preventDefault();
+
+          sendMessage();
+        }
+
+      }
+    );
+
+  }
+);
