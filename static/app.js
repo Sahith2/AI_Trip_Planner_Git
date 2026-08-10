@@ -1660,3 +1660,10 @@ function renderTableItinerary(header, rows) {
       .join("");
 }
 
+document.addEventListener("DOMContentLoaded", () => {
+  const button = document.getElementById("planButton");
+
+  if (button) {
+    button.addEventListener("click", sendMessage);
+  }
+});
