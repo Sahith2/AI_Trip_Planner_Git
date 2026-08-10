@@ -258,20 +258,11 @@ function extractResponseParts(response) {
    ============================================================ */
 
 function getCombinedText(response) {
-
-  const parts =
-    extractResponseParts(response);
-
-  const text =
-    parts.text
-      .filter(x => x && x !== "[object Object]")
-      .join("\n\n")
-      .trim();
-
-  if (text) {
-    return text;
+  const arr = Array.isArray(response) ? response : (response?.response ?? response);
+  if (Array.isArray(arr)) {
+    const textBlock = arr.find(b => b && b.type === "text" && typeof b.text === "string");
+    if (textBlock) return textBlock.text;
   }
-
   return plainText(response);
 }
 
@@ -753,6 +744,26 @@ function splitListItems(text) {
     .filter(
       s => s.length > 2
     );
+}
+
+function parseMarkdownTables(md) {
+  const tables = [];
+  const lines = md.split("\n");
+  let current = null;
+
+  for (const line of lines) {
+    if (/^\s*\|.*\|\s*$/.test(line)) {
+      if (/^\s*\|[\s:-]+\|\s*$/.test(line.replace(/-{2,}/g, "-"))) continue; // separator row
+      const cells = line.split("|").slice(1, -1).map(c => c.trim());
+      if (!current) current = [];
+      current.push(cells);
+    } else if (current) {
+      tables.push(current);
+      current = null;
+    }
+  }
+  if (current) tables.push(current);
+  return tables; // array of tables, each an array of rows, each row an array of cell strings
 }
 
 /* ============================================================
