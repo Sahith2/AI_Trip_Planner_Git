@@ -299,6 +299,7 @@ function cleanMarkdown(text) {
     .trim();
 }
 
+
 /* ============================================================
    INLINE TEXT
    ============================================================ */
@@ -754,17 +755,26 @@ function splitListItems(text) {
     );
 }
 
-
 /* ============================================================
    FOOD
    ============================================================ */
 
 function renderFood(data, text) {
-  const container = document.getElementById("foodPlanner");
+
+  const container =
+    document.getElementById("foodPlanner");
+
   if (!container) return;
 
+
   function cleanFoodText(value) {
-    if (value === null || value === undefined) return "";
+
+    if (
+      value === null ||
+      value === undefined
+    ) {
+      return "";
+    }
 
     return String(value)
       .replace(/<br\s*\/?>/gi, " ")
@@ -775,146 +785,73 @@ function renderFood(data, text) {
       .trim();
   }
 
-  const food = findValue(data, [
-    "food_plan",
-    "food_planner",
-    "restaurants",
-    "restaurant_recommendations",
-    "cuisine"
-  ]);
+
+  const food =
+    findValue(
+      data,
+      [
+        "food_plan",
+        "food_planner",
+        "restaurants",
+        "restaurant_recommendations",
+        "cuisine"
+      ]
+    );
+
 
   /* -----------------------------
-     1. STRUCTURED FOOD DATA
-  ----------------------------- */
+     STRUCTURED FOOD DATA
+     ----------------------------- */
 
-  if (Array.isArray(food) && food.length) {
-    const cards = food
-      .slice(0, 6)
-      .map((item, i) => {
-        const name = cleanFoodText(
-          typeof item === "object"
-            ? (
-                item.name ||
-                item.restaurant ||
-                item.title ||
-                item.item ||
-                "Food recommendation"
-              )
-            : item
-        );
+  if (
+    Array.isArray(food) &&
+    food.length
+  ) {
 
-        const reason = cleanFoodText(
-          typeof item === "object"
-            ? (
-                item.reason ||
-                item.description ||
-                item.notes ||
-                "Good fit for the trip."
-              )
-            : ""
-        );
+    const cards =
+      food
+        .slice(0, 6)
+        .map((item, i) => {
 
-        if (!name) return "";
+          const name =
+            cleanFoodText(
+              typeof item === "object"
+                ? (
+                    item.name ||
+                    item.restaurant ||
+                    item.title ||
+                    item.item ||
+                    "Food recommendation"
+                  )
+                : item
+            );
 
-        const meal =
-          i % 3 === 0
-            ? "Breakfast"
-            : i % 3 === 1
-              ? "Lunch"
-              : "Dinner";
 
-        return `
-          <div class="food-card">
-            <div class="meal-label">
-              ${escapeHtml(meal)}
-            </div>
-
-            <div class="food-name">
-              ${escapeHtml(name)}
-            </div>
-
-            ${
-              reason
-                ? `
-                  <div class="food-reason">
-                    ${escapeHtml(reason)}
-                  </div>
-                `
+          const reason =
+            cleanFoodText(
+              typeof item === "object"
+                ? (
+                    item.reason ||
+                    item.description ||
+                    item.notes ||
+                    "Good fit for the trip."
+                  )
                 : ""
-            }
-          </div>
-        `;
-      })
-      .filter(Boolean)
-      .join("");
+            );
 
-    if (cards) {
-      container.innerHTML = `<div class="food-grid">${cards}</div>`;
-      return;
-    }
-  }
 
-  /* -----------------------------
-     2. FALLBACK: EXTRACT FOOD
-        FROM AI RESPONSE
-  ----------------------------- */
+          if (!name) {
+            return "";
+          }
 
-  const lines = String(text || "")
-    .split("\n")
-    .map(cleanFoodText)
-    .filter(Boolean);
 
-  const candidates = [];
+          const meal =
+            i % 3 === 0
+              ? "Breakfast"
+              : i % 3 === 1
+                ? "Lunch"
+                : "Dinner";
 
-  for (const line of lines) {
-    const matches =
-      line.match(
-        /(?:Breakfast|Lunch|Dinner)\s*(?:at|:|-)?\s*[^|]+/gi
-      ) || [];
-
-    matches.forEach(match => {
-      const cleaned = cleanFoodText(match);
-
-      if (
-        cleaned.length > 5 &&
-        cleaned.length < 180
-      ) {
-        candidates.push(cleaned);
-      }
-    });
-  }
-
-  const unique = [
-    ...new Set(candidates)
-  ].slice(0, 6);
-
-  if (!unique.length) {
-    container.innerHTML = `
-      <div class="empty-state">
-        No food recommendations were found.
-      </div>
-    `;
-    return;
-  }
-
-  container.innerHTML = `
-    <div class="food-grid">
-      ${unique
-        .map(item => {
-          const mealMatch = item.match(
-            /^(Breakfast|Lunch|Dinner)/i
-          );
-
-          const meal = mealMatch
-            ? mealMatch[1]
-            : "Food";
-
-          const detail = item
-            .replace(
-              /^(Breakfast|Lunch|Dinner)\s*(?:at|:|-)?\s*/i,
-              ""
-            )
-            .trim();
 
           return `
             <div class="food-card">
@@ -924,54 +861,148 @@ function renderFood(data, text) {
               </div>
 
               <div class="food-name">
-                ${escapeHtml(
-                  detail
-                    .split(/[–—-]/)[0]
-                    .trim()
-                )}
+                ${escapeHtml(name)}
               </div>
 
-              <div class="food-reason">
-                ${escapeHtml(detail)}
-              </div>
+              ${
+                reason
+                  ? `
+                    <div class="food-reason">
+                      ${escapeHtml(reason)}
+                    </div>
+                  `
+                  : ""
+              }
 
             </div>
           `;
+
         })
-        .join("")}
-    </div>
-  `;
-}
+        .filter(Boolean)
+        .join("");
 
-  /*
-   * --------------------------------------------------
-   * 4. NOTHING FOUND
-   * --------------------------------------------------
-   */
+
+    if (cards) {
+
+      container.innerHTML =
+        `<div class="food-grid">${cards}</div>`;
+
+      return;
+    }
+  }
+
+
+  /* -----------------------------
+     FALLBACK:
+     EXTRACT FOOD FROM AI RESPONSE
+     ----------------------------- */
+
+  const lines =
+    String(text || "")
+      .split("\n")
+      .map(cleanFoodText)
+      .filter(Boolean);
+
+
+  const candidates = [];
+
+
+  for (const line of lines) {
+
+    const matches =
+      line.match(
+        /(?:Breakfast|Lunch|Dinner)\s*(?:at|:|-)?\s*[^|]+/gi
+      ) || [];
+
+
+    matches.forEach(match => {
+
+      const cleaned =
+        cleanFoodText(match);
+
+
+      if (
+        cleaned.length > 5 &&
+        cleaned.length < 180
+      ) {
+        candidates.push(cleaned);
+      }
+
+    });
+  }
+
+
+  const unique =
+    [
+      ...new Set(candidates)
+    ].slice(0, 6);
+
+
+  if (!unique.length) {
+
+    container.innerHTML = `
+      <div class="empty-state">
+        No food recommendations were found.
+      </div>
+    `;
+
+    return;
+  }
+
 
   container.innerHTML = `
-    <div class="empty-state">
-      No food recommendations were available for this trip.
-    </div>
-  `;
-}
+    <div class="food-grid">
+
+      ${
+        unique
+          .map(item => {
+
+            const mealMatch =
+              item.match(
+                /^(Breakfast|Lunch|Dinner)/i
+              );
 
 
-  container.innerHTML = `
-    <div class="food-card">
+            const meal =
+              mealMatch
+                ? mealMatch[1]
+                : "Food";
 
-      <div class="meal-label">
-        Personalized
-      </div>
 
-      <div class="food-name">
-        Local dining recommendations
-      </div>
+            const detail =
+              item
+                .replace(
+                  /^(Breakfast|Lunch|Dinner)\s*(?:at|:|-)?\s*/i,
+                  ""
+                )
+                .trim();
 
-      <div class="food-reason">
-        Food suggestions were incorporated
-        into your itinerary.
-      </div>
+
+            return `
+              <div class="food-card">
+
+                <div class="meal-label">
+                  ${escapeHtml(meal)}
+                </div>
+
+                <div class="food-name">
+                  ${escapeHtml(
+                    detail
+                      .split(/[–—-]/)[0]
+                      .trim()
+                  )}
+                </div>
+
+                <div class="food-reason">
+                  ${escapeHtml(detail)}
+                </div>
+
+              </div>
+            `;
+
+          })
+          .join("")
+      }
 
     </div>
   `;
@@ -989,6 +1020,9 @@ function renderPacking(data, text) {
       "packingList"
     );
 
+  if (!container) return;
+
+
   const packing =
     findValue(
       data,
@@ -999,6 +1033,7 @@ function renderPacking(data, text) {
       ]
     );
 
+
   let items = [];
 
 
@@ -1008,10 +1043,15 @@ function renderPacking(data, text) {
       packing.map(
         x =>
           plainText(
-            x.item ||
-            x.name ||
-            x.description ||
-            x
+            x &&
+            typeof x === "object"
+              ? (
+                  x.item ||
+                  x.name ||
+                  x.description ||
+                  x
+                )
+              : x
           )
       );
   }
@@ -1023,6 +1063,7 @@ function renderPacking(data, text) {
       text.match(
         /(?:Suggested Packing List|Packing List|Packing recommendations)[\s\S]*?(?=\n\n|$)/i
       );
+
 
     if (section) {
 
@@ -1061,23 +1102,23 @@ function renderPacking(data, text) {
           [
             ...new Set(items)
           ]
-          .slice(0, 16)
-          .map(
-            item => `
-              <div class="packing-item">
+            .slice(0, 16)
+            .map(
+              item => `
+                <div class="packing-item">
 
-                <span class="check">
-                  ✓
-                </span>
+                  <span class="check">
+                    ✓
+                  </span>
 
-                <span>
-                  ${escapeHtml(item)}
-                </span>
+                  <span>
+                    ${escapeHtml(item)}
+                  </span>
 
-              </div>
-            `
-          )
-          .join("")
+                </div>
+              `
+            )
+            .join("")
         }
 
       </div>
@@ -1096,6 +1137,7 @@ function splitReasoning(raw) {
   if (!raw) {
     return [];
   }
+
 
   return String(raw)
     .split(
@@ -1122,10 +1164,14 @@ function renderReason(data, response) {
       "aiReason"
     );
 
+  if (!container) return;
+
+
   const parts =
     extractResponseParts(
       response
     );
+
 
   const direct =
     findValue(
@@ -1158,7 +1204,7 @@ function renderReason(data, response) {
 
   if (!items.length) {
 
-    const text =
+    const combinedText =
       getCombinedText(response);
 
 
@@ -1169,7 +1215,7 @@ function renderReason(data, response) {
 
     if (
       /rain|shower|weather|temperature|forecast/i
-        .test(text)
+        .test(combinedText)
     ) {
 
       items.push(
@@ -1186,7 +1232,7 @@ function renderReason(data, response) {
 
     if (
       /food|restaurant|cafe|café|dinner|lunch/i
-        .test(text)
+        .test(combinedText)
     ) {
 
       items.push(
@@ -1261,6 +1307,9 @@ function renderItinerary(text, data) {
       "itinerary"
     );
 
+  if (!container) return;
+
+
   let source =
     String(text || "")
       .replace(
@@ -1332,213 +1381,64 @@ function renderItinerary(text, data) {
       .filter(
         line =>
           line.includes("|") &&
-          !/^\s*\|?\s*[-:|]+\s*\|?\s*$/.test(line)
+          !/^\s*\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)+\|?\s*$/
+            .test(line)
       );
 
 
-  if (tableRows.length > 1) {
+  if (tableRows.length >= 2) {
 
     const rows =
       tableRows
-        .slice(1)
-        .map(
-          line =>
-            line
-              .split("|")
-              .map(x => x.trim())
-              .filter(Boolean)
+        .slice(0, 8)
+        .map(row =>
+          row
+            .split("|")
+            .map(x => x.trim())
+            .filter(Boolean)
         );
 
 
     if (rows.length) {
 
-      const cards =
-        rows
-          .map(
-            (r, i) => `
-
-              <div class="day-card">
-
-                <div class="day-header">
-
-                  <div class="day-number">
-                    ${i + 1}
-                  </div>
-
-                  <div>
-
-                    <div class="day-title">
-                      ${inlineText(
-                        r[0] ||
-                        `Day ${i + 1}`
-                      )}
-                    </div>
-
-                    <div class="day-subtitle">
-                      ${inlineText(
-                        r
-                          .slice(1)
-                          .join(" · ")
-                          .slice(0, 120)
-                      )}
-                    </div>
-
-                  </div>
-
-                </div>
+      const header =
+        rows[0];
 
 
-                <div class="timeline">
-
-                  ${
-                    r
-                      .slice(1)
-                      .map(
-                        (x, j) => `
-
-                          <div class="timeline-item">
-
-                            <div class="timeline-time">
-                              ${
-                                j === 0
-                                  ? "Morning"
-                                  : j === 1
-                                    ? "Midday"
-                                    : j === 2
-                                      ? "Afternoon"
-                                      : "Evening"
-                              }
-                            </div>
-
-                            <div class="timeline-desc">
-                              ${inlineText(x)}
-                            </div>
-
-                          </div>
-
-                        `
-                      )
-                      .join("")
-                  }
-
-                </div>
-
-              </div>
-
-            `
-          )
-          .join("");
+      const dataRows =
+        rows.slice(1);
 
 
-      container.innerHTML =
-        cards;
-
-      return;
+      return renderTableItinerary(
+        header,
+        dataRows
+      );
     }
   }
 
 
   /*
-     Bullet fallback
-  */
-
-  const bullets =
-    source
-      .split("\n")
-      .filter(
-        x =>
-          /^[-*•]/.test(x)
-      );
-
-
-  if (bullets.length) {
-
-    container.innerHTML = `
-
-      <div class="day-card">
-
-        <div class="day-header">
-
-          <div class="day-number">
-            ✦
-          </div>
-
-          <div>
-
-            <div class="day-title">
-              Your personalized plan
-            </div>
-
-            <div class="day-subtitle">
-              Trip highlights
-            </div>
-
-          </div>
-
-        </div>
-
-
-        <div class="timeline">
-
-          ${
-            bullets
-              .map(
-                (x, i) => `
-
-                  <div class="timeline-item">
-
-                    <div class="timeline-time">
-                      ${i + 1}
-                    </div>
-
-                    <div class="timeline-desc">
-                      ${inlineText(
-                        x.replace(
-                          /^[-*•]\s*/,
-                          ""
-                        )
-                      )}
-                    </div>
-
-                  </div>
-
-                `
-              )
-              .join("")
-          }
-
-        </div>
-
-      </div>
-
-    `;
-
-    return;
-  }
-
-
-  /*
-     Final fallback
+     Last fallback:
+     Create one itinerary card from the response.
   */
 
   container.innerHTML = `
-
     <div class="day-card">
 
       <div class="day-header">
 
         <div class="day-number">
-          ✦
+          1
         </div>
 
         <div>
 
           <div class="day-title">
-            Personalized itinerary
+            Your trip plan
           </div>
 
           <div class="day-subtitle">
-            Your plan is ready
+            Personalized activities and food
           </div>
 
         </div>
@@ -1550,10 +1450,12 @@ function renderItinerary(text, data) {
 
         <div class="timeline-item">
 
+          <div class="timeline-time">
+            Day plan
+          </div>
+
           <div class="timeline-desc">
-            ${inlineText(
-              source.slice(0, 3000)
-            )}
+            ${inlineText(source)}
           </div>
 
         </div>
@@ -1561,13 +1463,12 @@ function renderItinerary(text, data) {
       </div>
 
     </div>
-
   `;
 }
 
 
 /* ============================================================
-   DAY MATCHES
+   DAY MATCH RENDERER
    ============================================================ */
 
 function renderDayMatches(days) {
@@ -1577,70 +1478,154 @@ function renderDayMatches(days) {
       "itinerary"
     );
 
+  if (!container) return;
+
 
   container.innerHTML =
     days
-      .map(
-        (d, index) => {
+      .map(day => {
 
-          let body =
-            cleanMarkdown(
-              d.body || ""
-            );
-
-
-          body =
-            body.replace(
-              /^\s*\|\s*/,
-              ""
-            );
+        const body =
+          cleanMarkdown(
+            day.body || ""
+          );
 
 
-          const pieces =
-            body
-              .split(/\||\n/)
-              .map(
-                x => x.trim()
-              )
-              .filter(Boolean);
-
-
-          const activityPieces =
-            pieces.filter(
-              x =>
-                !/^[-:]+$/.test(x)
-            );
-
-
-          const activities =
-            (
-              activityPieces.length
-                ? activityPieces
-                : [body]
+        const chunks =
+          body
+            .split(
+              /\n(?=[A-Z][A-Za-z ]{2,20}:)/
             )
-            .slice(0, 8);
+            .map(
+              x => x.trim()
+            )
+            .filter(Boolean);
+
+
+        const activities =
+          chunks.length
+            ? chunks
+            : splitListItems(body);
+
+
+        return `
+          <div class="day-card">
+
+            <div class="day-header">
+
+              <div class="day-number">
+                ${escapeHtml(day.day)}
+              </div>
+
+              <div>
+
+                <div class="day-title">
+                  ${inlineText(day.title)}
+                </div>
+
+                <div class="day-subtitle">
+                  Personalized activities and food
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <div class="timeline">
+
+              ${
+                activities
+                  .slice(0, 8)
+                  .map(
+                    (x, j) => `
+                      <div class="timeline-item">
+
+                        <div class="timeline-time">
+                          ${
+                            j === 0
+                              ? "Morning"
+                              : j === 1
+                                ? "Midday"
+                                : j === 2
+                                  ? "Afternoon"
+                                  : "Evening"
+                          }
+                        </div>
+
+                        <div class="timeline-desc">
+                          ${inlineText(
+                            x.replace(
+                              /^\*\*|\*\*$/g,
+                              ""
+                            )
+                          )}
+                        </div>
+
+                      </div>
+                    `
+                  )
+                  .join("")
+              }
+
+            </div>
+
+          </div>
+        `;
+      })
+      .join("");
+}
+
+
+/* ============================================================
+   TABLE ITINERARY
+   ============================================================ */
+
+function renderTableItinerary(header, rows) {
+
+  const container =
+    document.getElementById(
+      "itinerary"
+    );
+
+  if (!container) return;
+
+
+  container.innerHTML =
+    rows
+      .map(
+        (row, index) => {
+
+          const day =
+            row[0] ||
+            String(index + 1);
+
+
+          const title =
+            row[1] ||
+            "Trip plan";
+
+
+          const details =
+            row
+              .slice(2)
+              .filter(Boolean)
+              .join(" • ");
 
 
           return `
-
             <div class="day-card">
 
               <div class="day-header">
 
                 <div class="day-number">
-                  ${escapeHtml(
-                    d.day ||
-                    index + 1
-                  )}
+                  ${escapeHtml(day)}
                 </div>
 
                 <div>
 
                   <div class="day-title">
-                    ${inlineText(
-                      d.title ||
-                      `Day ${index + 1}`
-                    )}
+                    ${inlineText(title)}
                   </div>
 
                   <div class="day-subtitle">
@@ -1654,502 +1639,24 @@ function renderDayMatches(days) {
 
               <div class="timeline">
 
-                ${
-                  activities
-                    .map(
-                      (x, j) => `
+                <div class="timeline-item">
 
-                        <div class="timeline-item">
+                  <div class="timeline-time">
+                    Day plan
+                  </div>
 
-                          <div class="timeline-time">
-                            ${
-                              j === 0
-                                ? "Morning"
-                                : j === 1
-                                  ? "Midday"
-                                  : j === 2
-                                    ? "Afternoon"
-                                    : "Evening"
-                            }
-                          </div>
+                  <div class="timeline-desc">
+                    ${inlineText(details)}
+                  </div>
 
-                          <div class="timeline-desc">
-                            ${inlineText(
-                              x.replace(
-                                /^\*\*|\*\*$/g,
-                                ""
-                              )
-                            )}
-                          </div>
-
-                        </div>
-
-                      `
-                    )
-                    .join("")
-                }
+                </div>
 
               </div>
 
             </div>
-
           `;
         }
       )
       .join("");
 }
 
-
-/* ============================================================
-   AI PLANNER STATUS
-   Removes Agent Result 1 / Agent Result 2
-   ============================================================ */
-
-function renderPlannerStatus() {
-
-  const container =
-    document.getElementById(
-      "response"
-    );
-
-  if (!container) {
-    return;
-  }
-
-
-  container.innerHTML = `
-
-    <div class="planner-status success">
-
-      <div class="status-icon">
-        ✓
-      </div>
-
-      <div>
-
-        <div class="status-title">
-          Your trip plan is ready
-        </div>
-
-        <div class="status-text">
-          Your itinerary, weather, food and packing
-          recommendations have been prepared.
-        </div>
-
-      </div>
-
-    </div>
-
-  `;
-}
-
-
-/* ============================================================
-   RESET
-   ============================================================ */
-
-function resetResults() {
-
-  const fields = [
-    "summaryDestination",
-    "summaryDuration",
-    "summaryWeather",
-    "summaryBudget",
-    "summaryFood"
-  ];
-
-
-  fields.forEach(id => {
-
-    const element =
-      document.getElementById(id);
-
-    if (element) {
-      element.textContent = "—";
-    }
-
-  });
-
-
-  const response =
-    document.getElementById(
-      "response"
-    );
-
-
-  if (response) {
-
-    response.innerHTML = `
-
-      <div class="planner-status">
-
-        <div class="status-icon loading-dot">
-          ✦
-        </div>
-
-        <div>
-
-          <div class="status-title">
-            Planning your trip
-          </div>
-
-          <div class="status-text">
-            Searching destinations, checking conditions
-            and building your plan…
-          </div>
-
-        </div>
-
-      </div>
-
-    `;
-  }
-}
-
-
-/* ============================================================
-   MAIN API CALL
-   ============================================================ */
-
-async function sendMessage() {
-
-  const messageBox =
-    document.getElementById(
-      "message"
-    );
-
-  const button =
-    document.getElementById(
-      "planButton"
-    );
-
-
-  if (!messageBox || !button) {
-    return;
-  }
-
-
-  const message =
-    messageBox.value.trim();
-
-
-  if (!message) {
-
-    messageBox.focus();
-
-    return;
-  }
-
-
-  button.disabled = true;
-
-  button.innerHTML = `
-    <span class="spinner"></span>
-    Planning your trip…
-  `;
-
-
-  resetResults();
-
-
-  document.getElementById(
-    "itinerary"
-  ).innerHTML = `
-
-    <div class="loading">
-
-      <span class="spinner"></span>
-
-      Building your itinerary…
-
-    </div>
-
-  `;
-
-
-  document.getElementById(
-    "weather"
-  ).innerHTML = `
-
-    <div class="loading">
-
-      <span class="spinner"></span>
-
-      Checking destination conditions…
-
-    </div>
-
-  `;
-
-
-  document.getElementById(
-    "foodPlanner"
-  ).innerHTML = `
-
-    <div class="loading">
-
-      <span class="spinner"></span>
-
-      Finding food ideas…
-
-    </div>
-
-  `;
-
-
-  document.getElementById(
-    "packingList"
-  ).innerHTML = `
-
-    <div class="loading">
-
-      <span class="spinner"></span>
-
-      Preparing your packing list…
-
-    </div>
-
-  `;
-
-
-  document.getElementById(
-    "aiReason"
-  ).innerHTML = `
-
-    <div class="loading">
-
-      <span class="spinner"></span>
-
-      Preparing planning insights…
-
-    </div>
-
-  `;
-
-
-  try {
-
-    const response =
-      await fetch(
-        "/api/chat",
-        {
-          method: "POST",
-
-          headers: {
-            "Content-Type":
-              "application/json"
-          },
-
-          body: JSON.stringify({
-            message
-          })
-        }
-      );
-
-
-    const data =
-      await response.json();
-
-
-    if (!response.ok) {
-
-      throw new Error(
-        data.error ||
-        "Request failed."
-      );
-    }
-
-
-    const responseValue =
-      data.response ?? data;
-
-
-    const text =
-      getCombinedText(
-        responseValue
-      );
-
-
-    /*
-       Update every visual section
-    */
-
-    updateTripSummary(
-      data,
-      text
-    );
-
-
-    renderItinerary(
-      text,
-      data
-    );
-
-
-    renderWeather(
-      data,
-      text
-    );
-
-
-    renderFood(
-      data,
-      text
-    );
-
-
-    renderPacking(
-      data,
-      text
-    );
-
-
-    renderReason(
-      data,
-      responseValue
-    );
-
-
-    /*
-       Clean AI Planner card.
-       No Agent Result 1.
-       No Agent Result 2.
-       No raw model output.
-    */
-
-    renderPlannerStatus();
-
-
-    /*
-       Scroll to the useful result,
-       not the raw AI response.
-    */
-
-    const summaryCard =
-      document.getElementById(
-        "tripSummaryCard"
-      );
-
-
-    if (summaryCard) {
-
-      summaryCard.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
-    }
-
-  }
-
-
-  catch (error) {
-
-    console.error(
-      "Trip planner error:",
-      error
-    );
-
-
-    const errorHtml = `
-
-      <div class="error">
-
-        <strong>
-          We couldn't build the trip.
-        </strong>
-
-        <br>
-
-        <small>
-          ${escapeHtml(
-            error.message
-          )}
-        </small>
-
-      </div>
-
-    `;
-
-
-    document.getElementById(
-      "response"
-    ).innerHTML = errorHtml;
-
-
-    document.getElementById(
-      "itinerary"
-    ).innerHTML = errorHtml;
-
-
-    document.getElementById(
-      "weather"
-    ).innerHTML = errorHtml;
-
-
-    document.getElementById(
-      "foodPlanner"
-    ).innerHTML = errorHtml;
-
-
-    document.getElementById(
-      "packingList"
-    ).innerHTML = errorHtml;
-
-
-    document.getElementById(
-      "aiReason"
-    ).innerHTML = errorHtml;
-
-  }
-
-
-  finally {
-
-    button.disabled = false;
-
-    button.innerHTML = `
-      <span>✨</span>
-      Plan my trip
-    `;
-  }
-}
-
-
-/* ============================================================
-   CTRL + ENTER
-   ============================================================ */
-
-document.addEventListener(
-  "DOMContentLoaded",
-  () => {
-
-    const box =
-      document.getElementById(
-        "message"
-      );
-
-
-    if (!box) {
-      return;
-    }
-
-
-    box.addEventListener(
-      "keydown",
-      event => {
-
-        if (
-          event.key === "Enter" &&
-          event.ctrlKey
-        ) {
-
-          event.preventDefault();
-
-          sendMessage();
-        }
-
-      }
-    );
-
-  }
-);
