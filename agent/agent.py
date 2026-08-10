@@ -7,6 +7,7 @@ and call application tools for retrieval and database actions.
 
 import json
 import os
+from openai import OpenAI
 
 from databricks.sdk import WorkspaceClient
 
@@ -19,6 +20,11 @@ MODEL_ENDPOINT = os.getenv(
 )
 
 workspace = WorkspaceClient()
+
+client = OpenAI(
+    api_key=os.environ.get("DATABRICKS_TOKEN"),
+    base_url=f"{os.environ.get('DATABRICKS_HOST', '').rstrip('/')}/serving-endpoints",
+)
 
 
 # ------------------------------------------------------------
@@ -318,8 +324,8 @@ Important behavior:
 
     for _ in range(max_tool_rounds):
 
-        response = workspace.serving_endpoints.query(
-            name=MODEL_ENDPOINT,
+        response = client.chat.completions.create(
+            model=MODEL_ENDPOINT,
             messages=messages,
             tools=TOOL_DEFINITIONS,
             temperature=0.2,
