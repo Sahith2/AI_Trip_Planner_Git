@@ -1702,7 +1702,7 @@ async function sendMessage() {
   `;
 
 
-  resetResults();
+
 
 
   document.getElementById(
