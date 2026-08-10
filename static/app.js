@@ -1660,6 +1660,300 @@ function renderTableItinerary(header, rows) {
       .join("");
 }
 
+/* ============================================================
+   MAIN API CALL
+   ============================================================ */
+
+async function sendMessage() {
+
+  const messageBox =
+    document.getElementById(
+      "message"
+    );
+
+  const button =
+    document.getElementById(
+      "planButton"
+    );
+
+
+  if (!messageBox || !button) {
+    return;
+  }
+
+
+  const message =
+    messageBox.value.trim();
+
+
+  if (!message) {
+
+    messageBox.focus();
+
+    return;
+  }
+
+
+  button.disabled = true;
+
+  button.innerHTML = `
+    <span class="spinner"></span>
+    Planning your trip…
+  `;
+
+
+  resetResults();
+
+
+  document.getElementById(
+    "itinerary"
+  ).innerHTML = `
+
+    <div class="loading">
+
+      <span class="spinner"></span>
+
+      Building your itinerary…
+
+    </div>
+
+  `;
+
+
+  document.getElementById(
+    "weather"
+  ).innerHTML = `
+
+    <div class="loading">
+
+      <span class="spinner"></span>
+
+      Checking destination conditions…
+
+    </div>
+
+  `;
+
+
+  document.getElementById(
+    "foodPlanner"
+  ).innerHTML = `
+
+    <div class="loading">
+
+      <span class="spinner"></span>
+
+      Finding food ideas…
+
+    </div>
+
+  `;
+
+
+  document.getElementById(
+    "packingList"
+  ).innerHTML = `
+
+    <div class="loading">
+
+      <span class="spinner"></span>
+
+      Preparing your packing list…
+
+    </div>
+
+  `;
+
+
+  document.getElementById(
+    "aiReason"
+  ).innerHTML = `
+
+    <div class="loading">
+
+      <span class="spinner"></span>
+
+      Preparing planning insights…
+
+    </div>
+
+  `;
+
+
+  try {
+
+    const response =
+      await fetch(
+        "/api/chat",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body: JSON.stringify({
+            message
+          })
+        }
+      );
+
+
+    const data =
+      await response.json();
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        data.error ||
+        "Request failed."
+      );
+    }
+
+
+    const responseValue =
+      data.response ?? data;
+
+
+    const text =
+      getCombinedText(
+        responseValue
+      );
+
+
+    updateTripSummary(
+      data,
+      text
+    );
+
+
+    renderItinerary(
+      text,
+      data
+    );
+
+
+    renderWeather(
+      data,
+      text
+    );
+
+
+    renderFood(
+      data,
+      text
+    );
+
+
+    renderPacking(
+      data,
+      text
+    );
+
+
+    renderReason(
+      data,
+      responseValue
+    );
+
+
+    renderPlannerStatus();
+
+
+    const summaryCard =
+      document.getElementById(
+        "tripSummaryCard"
+      );
+
+
+    if (summaryCard) {
+
+      summaryCard.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+
+    }
+
+
+  }
+
+  catch (error) {
+
+    console.error(
+      "Trip planner error:",
+      error
+    );
+
+
+    const errorHtml = `
+
+      <div class="error">
+
+        <strong>
+          We couldn't build the trip.
+        </strong>
+
+        <br>
+
+        <small>
+          ${escapeHtml(
+            error.message
+          )}
+        </small>
+
+      </div>
+
+    `;
+
+
+    document.getElementById(
+      "response"
+    ).innerHTML = errorHtml;
+
+
+    document.getElementById(
+      "itinerary"
+    ).innerHTML = errorHtml;
+
+
+    document.getElementById(
+      "weather"
+    ).innerHTML = errorHtml;
+
+
+    document.getElementById(
+      "foodPlanner"
+    ).innerHTML = errorHtml;
+
+
+    document.getElementById(
+      "packingList"
+    ).innerHTML = errorHtml;
+
+
+    document.getElementById(
+      "aiReason"
+    ).innerHTML = errorHtml;
+
+  }
+
+
+  finally {
+
+    button.disabled = false;
+
+    button.innerHTML = `
+      <span>✨</span>
+      Plan my trip
+    `;
+
+  }
+
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const button = document.getElementById("planButton");
 
