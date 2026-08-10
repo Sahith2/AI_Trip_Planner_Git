@@ -28,7 +28,7 @@ _workspace = WorkspaceClient()
 # database resource used by the Databricks App.
 #
 # We will set this as an App environment variable.
-_ENDPOINT_NAME = os.environ.get("LAKEBASE_ENDPOINT_NAME")
+_ENDPOINT_NAME = os.environ.get("ENDPOINT_NAME")
 
 
 # ------------------------------------------------------------
