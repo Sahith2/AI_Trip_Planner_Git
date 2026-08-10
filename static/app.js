@@ -1859,7 +1859,7 @@ async function sendMessage() {
     );
 
 
-    renderPlannerStatus();
+    
 
 
     const summaryCard =
