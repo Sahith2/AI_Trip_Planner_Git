@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AI Trip Planner</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #1f2937;
+        }
+
+        .header {
+            background: linear-gradient(
+                135deg,
+                #2563eb,
+                #4f46e5
+            );
+            color: white;
+            padding: 28px 40px;
+        }
+
+        .header h1 {
+            margin: 0 0 8px;
+            font-size: 30px;
+        }
+
+        .header p {
+            margin: 0;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 14px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.07);
+        }
+
+        .card h2 {
+            margin-top: 0;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 130px;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            padding: 14px;
+            font-size: 16px;
+            resize: vertical;
+        }
+
+        button {
+            margin-top: 14px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 9px;
+            padding: 12px 22px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .examples {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .example {
+            background: #eef2ff;
+            color: #3730a3;
+            padding: 9px 13px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .example:hover {
+            background: #e0e7ff;
+        }
+
+        .response {
+            white-space: pre-wrap;
+            line-height: 1.6;
+        }
+
+        .loading {
+            color: #6b7280;
+            font-style: italic;
+        }
+
+        .error {
+            color: #dc2626;
+            background: #fef2f2;
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(
+                auto-fit,
+                minmax(200px, 1fr)
+            );
+            gap: 15px;
+        }
+
+        .feature {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 18px;
+        }
+
+        .feature strong {
+            display: block;
+            margin-bottom: 6px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <h1>🌎 AI Trip & Outdoor Activity Planner</h1>
+        <p>
+            Plan smarter trips using AI, weather,
+            air quality and travel knowledge.
+        </p>
+    </div>
+
+
+    <div class="container">
+
+        <!-- Planner -->
+
+        <div class="card">
+
+            <h2>Plan Your Trip</h2>
+
+            <p>
+                Tell the AI agent what you want to do.
+            </p>
+
+            <textarea
+                id="message"
+                placeholder="Example: Plan a 3-day trip to Chicago with outdoor activities, good food and a reasonable budget."
+            ></textarea>
+
+            <button
+                id="planButton"
+                onclick="sendMessage()"
+            >
+                ✨ Plan My Trip
+            </button>
+
+            <div class="examples">
+
+                <div
+                    class="example"
+                    onclick="useExample(
+                        'Plan a 3-day trip to Chicago with outdoor activities.'
+                    )"
+                >
+                    Chicago 3-day trip
+                </div>
+
+                <div
+                    class="example"
+                    onclick="useExample(
+                        'Plan a weekend trip to Austin with outdoor activities and good food.'
+                    )"
+                >
+                    Austin weekend
+                </div>
+
+                <div
+                    class="example"
+                    onclick="useExample(
+                        'Create a packing list for a rainy outdoor trip.'
+                    )"
+                >
+                    Packing list
+                </div>
+
+                <div
+                    class="example"
+                    onclick="useExample(
+                        'Find interesting historical attractions in Chicago.'
+                    )"
+                >
+                    Historical attractions
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- AI response -->
+
+        <div class="card">
+
+            <h2>🤖 AI Planner</h2>
+
+            <div
+                id="response"
+                class="response"
+            >
+                Your trip plan will appear here.
+            </div>
+
+        </div>
+
+
+        <!-- Features -->
+
+        <div class="card">
+
+            <h2>What the Agent Can Do</h2>
+
+            <div class="features">
+
+                <div class="feature">
+                    <strong>🌦️ Weather-aware planning</strong>
+                    Adjust outdoor activities based on
+                    forecast conditions.
+                </div>
+
+                <div class="feature">
+                    <strong>🔎 Semantic travel search</strong>
+                    Search destination knowledge using
+                    vector embeddings.
+                </div>
+
+                <div class="feature">
+                    <strong>📅 Itinerary management</strong>
+                    Create and modify itinerary items
+                    stored in Lakebase.
+                </div>
+
+                <div class="feature">
+                    <strong>🎒 Packing planner</strong>
+                    Build a packing list based on
+                    trip conditions and activities.
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <script>
+
+        function useExample(text) {
+            document.getElementById("message").value = text;
+        }
+
+
+        async function sendMessage() {
+
+            const messageBox =
+                document.getElementById("message");
+
+            const responseBox =
+                document.getElementById("response");
+
+            const button =
+                document.getElementById("planButton");
+
+            const message =
+                messageBox.value.trim();
+
+
+            if (!message) {
+
+                responseBox.innerHTML =
+                    '<div class="error">' +
+                    'Please enter a trip request.' +
+                    '</div>';
+
+                return;
+            }
+
+
+            button.disabled = true;
+
+            button.textContent = "Planning...";
+
+            responseBox.innerHTML =
+                '<div class="loading">' +
+                '🤖 AI is planning your trip...' +
+                '</div>';
+
+
+            try {
+
+                const response = await fetch(
+                    "/api/chat",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body: JSON.stringify({
+                            message: message
+                        })
+                    }
+                );
+
+
+                const data =
+                    await response.json();
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        data.error ||
+                        "Request failed."
+                    );
+                }
+
+
+                responseBox.textContent =
+                    data.response ||
+                    "No response received.";
+
+            }
+
+            catch (error) {
+
+                responseBox.innerHTML =
+                    '<div class="error">' +
+                    "Error: " +
+                    error.message +
+                    "</div>";
+
+            }
+
+            finally {
+
+                button.disabled = false;
+
+                button.textContent =
+                    "✨ Plan My Trip";
+            }
+        }
+
+    </script>
+
+</body>
+</html>
