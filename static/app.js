@@ -1,14 +1,11 @@
-// Example prompts
-
 function useExample(text) {
     const messageBox = document.getElementById("message");
 
-    messageBox.value = text;
-    messageBox.focus();
+    if (messageBox) {
+        messageBox.value = text;
+        messageBox.focus();
+    }
 }
-
-
-// HTML safety
 
 function escapeHtml(value) {
     if (value === null || value === undefined) {
@@ -23,472 +20,523 @@ function escapeHtml(value) {
         .replace(/'/g, "&#039;");
 }
 
-
-// Format values
-
-function formatValue(value) {
-    if (value === null || value === undefined) {
-        return "";
+function getResponseItems(response) {
+    if (!response) {
+        return [];
     }
 
-    if (typeof value === "string") {
-        return escapeHtml(value).replace(/\n/g, "<br>");
+    if (Array.isArray(response)) {
+        return response;
     }
 
-    if (typeof value === "number") {
-        return escapeHtml(value);
-    }
+    return [response];
+}
 
-    if (typeof value === "boolean") {
-        return value ? "Yes" : "No";
-    }
+function getAllText(response) {
+    const texts = [];
 
-    if (Array.isArray(value)) {
-        return value
-            .map(item => {
-                if (typeof item === "object" && item !== null) {
-                    return `<li>${formatObject(item)}</li>`;
+    function collect(value) {
+        if (value === null || value === undefined) {
+            return;
+        }
+
+        if (typeof value === "string") {
+            if (value.trim()) {
+                texts.push(value);
+            }
+            return;
+        }
+
+        if (Array.isArray(value)) {
+            value.forEach(collect);
+            return;
+        }
+
+        if (typeof value === "object") {
+            Object.entries(value).forEach(([key, val]) => {
+                if (
+                    key === "text" ||
+                    key === "content" ||
+                    key === "message" ||
+                    key === "summary"
+                ) {
+                    collect(val);
+                } else if (typeof val === "object") {
+                    collect(val);
                 }
-
-                return `<li>${escapeHtml(item)}</li>`;
-            })
-            .join("");
-    }
-
-    if (typeof value === "object") {
-        return formatObject(value);
-    }
-
-    return escapeHtml(value);
-}
-
-
-// Format objects
-
-function formatObject(object) {
-    if (object === null || object === undefined) {
-        return "";
-    }
-
-    if (typeof object !== "object") {
-        return escapeHtml(object);
-    }
-
-    return Object.entries(object)
-        .map(([key, value]) => {
-            const label = key
-                .replace(/_/g, " ")
-                .replace(/\b\w/g, character => character.toUpperCase());
-
-            if (Array.isArray(value)) {
-                return `
-                    <div class="result-card">
-                        <strong>${escapeHtml(label)}</strong>
-
-                        <ul class="result-list">
-                            ${value.map(item => {
-                                if (
-                                    typeof item === "object" &&
-                                    item !== null
-                                ) {
-                                    return `<li>${formatObject(item)}</li>`;
-                                }
-
-                                return `<li>${escapeHtml(item)}</li>`;
-                            }).join("")}
-                        </ul>
-                    </div>
-                `;
-            }
-
-            if (typeof value === "object" && value !== null) {
-                return `
-                    <div class="result-card">
-                        <strong>${escapeHtml(label)}</strong>
-                        ${formatObject(value)}
-                    </div>
-                `;
-            }
-
-            return `
-                <div class="result-card">
-                    <strong>${escapeHtml(label)}:</strong>
-                    ${formatValue(value)}
-                </div>
-            `;
-        })
-        .join("");
-}
-
-
-// Find values inside nested response
-
-function findValue(data, possibleKeys) {
-    if (data === null || data === undefined) {
-        return null;
-    }
-
-    if (typeof data !== "object") {
-        return null;
-    }
-
-    for (const key of possibleKeys) {
-        if (
-            Object.prototype.hasOwnProperty.call(data, key)
-        ) {
-            return data[key];
+            });
         }
     }
 
-    for (const value of Object.values(data)) {
-        if (
-            typeof value === "object" &&
-            value !== null
-        ) {
-            const result = findValue(value, possibleKeys);
+    collect(response);
 
-            if (
-                result !== null &&
-                result !== undefined
-            ) {
-                return result;
-            }
+    return texts;
+}
+
+function getBestAgentText(response) {
+    const texts = getAllText(response);
+
+    if (!texts.length) {
+        return "";
+    }
+
+    let best = texts[0];
+
+    for (const text of texts) {
+        if (
+            text.length > best.length &&
+            (
+                text.includes("Suggested itinerary") ||
+                text.includes("Trip") ||
+                text.includes("Destination") ||
+                text.includes("Packing")
+            )
+        ) {
+            best = text;
+        }
+    }
+
+    return best;
+}
+
+function markdownToHtml(text) {
+    if (!text) {
+        return "";
+    }
+
+    let html = escapeHtml(text);
+
+    html = html.replace(
+        /\*\*(.*?)\*\*/g,
+        "<strong>$1</strong>"
+    );
+
+    html = html.replace(
+        /^###\s+(.*?)$/gm,
+        "<h4>$1</h4>"
+    );
+
+    html = html.replace(
+        /^##\s+(.*?)$/gm,
+        "<h3>$1</h3>"
+    );
+
+    html = html.replace(
+        /^#\s+(.*?)$/gm,
+        "<h2>$1</h2>"
+    );
+
+    html = html.replace(
+        /^[-•]\s+(.*?)$/gm,
+        "<li>$1</li>"
+    );
+
+    html = html.replace(
+        /(<li>.*?<\/li>)/gs,
+        "<ul>$1</ul>"
+    );
+
+    html = html.replace(
+        /\n{2,}/g,
+        "<br><br>"
+    );
+
+    html = html.replace(
+        /\n/g,
+        "<br>"
+    );
+
+    return html;
+}
+
+function findElement(ids) {
+    for (const id of ids) {
+        const element = document.getElementById(id);
+
+        if (element) {
+            return element;
         }
     }
 
     return null;
 }
 
+function setElementText(ids, value) {
+    const element = findElement(ids);
 
-// Trip summary
-
-function updateTripSummary(data) {
-    const destination = findValue(data, [
-        "destination",
-        "destination_name",
-        "location",
-        "city"
-    ]);
-
-    const duration = findValue(data, [
-        "duration",
-        "duration_days",
-        "days",
-        "trip_duration"
-    ]);
-
-    const weather = findValue(data, [
-        "weather",
-        "weather_description",
-        "weather_summary"
-    ]);
-
-    const budget = findValue(data, [
-        "budget",
-        "estimated_cost",
-        "trip_budget"
-    ]);
-
-    const food = findValue(data, [
-        "food",
-        "food_preference",
-        "cuisine",
-        "cuisine_preference"
-    ]);
-
-    const destinationElement =
-        document.getElementById("summaryDestination");
-
-    const durationElement =
-        document.getElementById("summaryDuration");
-
-    const weatherElement =
-        document.getElementById("summaryWeather");
-
-    const budgetElement =
-        document.getElementById("summaryBudget");
-
-    const foodElement =
-        document.getElementById("summaryFood");
-
-    if (destination) {
-        destinationElement.textContent =
-            typeof destination === "object"
-                ? "See response"
-                : destination;
+    if (!element || value === null || value === undefined) {
+        return;
     }
 
-    if (duration) {
-        durationElement.textContent =
-            typeof duration === "number"
-                ? `${duration} days`
-                : duration;
-    }
-
-    if (weather) {
-        weatherElement.textContent =
-            typeof weather === "object"
-                ? "Available"
-                : weather;
-    }
-
-    if (budget) {
-        budgetElement.textContent =
-            typeof budget === "number"
-                ? `$${budget}`
-                : budget;
-    }
-
-    if (food) {
-        foodElement.textContent =
-            typeof food === "object"
-                ? "Personalized"
-                : food;
+    if (String(value).trim()) {
+        element.textContent = String(value).trim();
     }
 }
 
+function extractDestination(text) {
+    const patterns = [
+        /Destination\*?\*?\s*[|:]\s*\**([^|\n]+)/i,
+        /(?:Trip to|trip to)\s+([A-Z][A-Za-z .'-]+?)(?:\s*\(|\s+with|\s+for|[.,])/,
+        /(?:Weekend Trip to|Trip to)\s+([A-Z][A-Za-z .'-]+)/i
+    ];
 
-// Weather
+    for (const pattern of patterns) {
+        const match = text.match(pattern);
 
-function renderWeather(data) {
-    const container =
-        document.getElementById("weather");
+        if (match && match[1]) {
+            return match[1]
+                .replace(/\*\*/g, "")
+                .trim();
+        }
+    }
 
-    const weather = findValue(data, [
-        "weather_snapshots",
-        "weather",
-        "forecast",
-        "weather_data"
+    return null;
+}
+
+function extractDuration(text) {
+    const patterns = [
+        /Dates\*?\*?\s*[|:]\s*.*?\((\d+)\s*night/i,
+        /Duration\*?\*?\s*[|:]\s*([^\n|]+)/i,
+        /(\d+)[ -]?day\s+(?:trip|itinerary)/i,
+        /Plan a\s+(\d+)[ -]?day/i,
+        /(\d+)\s*days?/i
+    ];
+
+    for (const pattern of patterns) {
+        const match = text.match(pattern);
+
+        if (match && match[1]) {
+            if (/night/i.test(pattern.source)) {
+                return `${parseInt(match[1], 10) + 1} days`;
+            }
+
+            return `${match[1]} days`;
+        }
+    }
+
+    return null;
+}
+
+function extractWeather(text) {
+    const patterns = [
+        /Weather\*?\*?\s*[|:]\s*([^\n]+)/i,
+        /Weather:\s*([^\n]+)/i,
+        /Warm and sunny[^.\n]*(?:\.[^.\n]*)?/i,
+        /highs?\s*~?\s*\d+[^.\n]*/i,
+        /Air Quality\*?\*?\s*[|:]\s*([^\n]+)/i
+    ];
+
+    const parts = [];
+
+    for (const pattern of patterns) {
+        const match = text.match(pattern);
+
+        if (match) {
+            const value = match[1] || match[0];
+
+            if (
+                value &&
+                !parts.includes(value.trim())
+            ) {
+                parts.push(value.trim());
+            }
+        }
+    }
+
+    if (parts.length) {
+        return parts.slice(0, 2).join(" ");
+    }
+
+    return null;
+}
+
+function extractFood(text) {
+    const patterns = [
+        /Trip Theme\*?\*?\s*[|:]\s*([^\n]+)/i,
+        /Thai cuisine/i,
+        /Indian cuisine/i,
+        /Italian cuisine/i,
+        /Mexican cuisine/i,
+        /food preference[^:\n]*:\s*([^\n]+)/i
+    ];
+
+    for (const pattern of patterns) {
+        const match = text.match(pattern);
+
+        if (match) {
+            return match[1] || match[0];
+        }
+    }
+
+    return null;
+}
+
+function extractBudget(text) {
+    const patterns = [
+        /Budget\*?\*?\s*[|:]\s*([^\n|]+)/i,
+        /Estimated Cost\*?\*?\s*[|:]\s*([^\n|]+)/i,
+        /\$\s*[\d,]+(?:\s*-\s*\$?\s*[\d,]+)?/
+    ];
+
+    for (const pattern of patterns) {
+        const match = text.match(pattern);
+
+        if (match) {
+            return match[1] || match[0];
+        }
+    }
+
+    return null;
+}
+
+function updateTripSummary(response) {
+    const text = getBestAgentText(response);
+
+    if (!text) {
+        return;
+    }
+
+    const destination = extractDestination(text);
+    const duration = extractDuration(text);
+    const weather = extractWeather(text);
+    const food = extractFood(text);
+    const budget = extractBudget(text);
+
+    setElementText(
+        ["summaryDestination"],
+        destination
+    );
+
+    setElementText(
+        ["summaryDuration"],
+        duration
+    );
+
+    setElementText(
+        ["summaryWeather"],
+        weather
+    );
+
+    setElementText(
+        ["summaryBudget"],
+        budget
+    );
+
+    setElementText(
+        ["summaryFood"],
+        food
+    );
+}
+
+function renderItinerary(response) {
+    const container = findElement([
+        "itinerary",
+        "itineraryContent",
+        "tripItinerary"
     ]);
+
+    if (!container) {
+        return;
+    }
+
+    const text = getBestAgentText(response);
+
+    if (!text) {
+        return;
+    }
+
+    let itinerary = text;
+
+    const startIndex = text.search(
+        /Suggested itinerary|Itinerary|Daily itinerary/i
+    );
+
+    if (startIndex >= 0) {
+        itinerary = text.substring(startIndex);
+    }
+
+    container.innerHTML = `
+        <div class="itinerary-result">
+            ${markdownToHtml(itinerary)}
+        </div>
+    `;
+}
+
+function renderWeather(response) {
+    const container = findElement([
+        "weather",
+        "weatherIntelligence",
+        "weatherContent"
+    ]);
+
+    if (!container) {
+        return;
+    }
+
+    const text = getBestAgentText(response);
+
+    if (!text) {
+        return;
+    }
+
+    const weather = extractWeather(text);
 
     if (!weather) {
         return;
     }
 
-    if (!Array.isArray(weather)) {
-        container.innerHTML = `
-            <div class="weather-card">
-                <strong>🌦️ Weather</strong>
-                <p>${formatValue(weather)}</p>
+    container.innerHTML = `
+        <div class="weather-card">
+            <div class="weather-title">
+                🌦️ Weather & Air Quality
             </div>
-        `;
 
+            <div class="weather-content">
+                ${markdownToHtml(weather)}
+            </div>
+        </div>
+    `;
+}
+
+function renderFood(response) {
+    const container = findElement([
+        "foodPlanner",
+        "foodContent",
+        "foodRecommendations"
+    ]);
+
+    if (!container) {
         return;
     }
 
-    container.innerHTML = weather
-        .map(day => {
-            const date =
-                day.forecast_date ||
-                day.date ||
-                "Forecast";
+    const text = getBestAgentText(response);
 
-            const description =
-                day.weather_description ||
-                day.description ||
-                "Weather information";
+    if (!text) {
+        return;
+    }
 
-            const high = day.temperature_high;
-            const low = day.temperature_low;
-            const rain = day.precipitation_probability;
-
-            return `
-                <div class="weather-card">
-
-                    <strong>
-                        🌦️ ${escapeHtml(date)}
-                    </strong>
-
-                    <p>
-                        ${escapeHtml(description)}
-                    </p>
-
-                    ${
-                        high !== undefined
-                            ? `
-                                <div>
-                                    🌡️ High:
-                                    ${escapeHtml(high)}°
-                                </div>
-                              `
-                            : ""
-                    }
-
-                    ${
-                        low !== undefined
-                            ? `
-                                <div>
-                                    🌡️ Low:
-                                    ${escapeHtml(low)}°
-                                </div>
-                              `
-                            : ""
-                    }
-
-                    ${
-                        rain !== undefined
-                            ? `
-                                <div>
-                                    🌧️ Rain:
-                                    ${escapeHtml(rain)}%
-                                </div>
-                              `
-                            : ""
-                    }
-
-                </div>
-            `;
-        })
-        .join("");
-}
-
-
-// Food planner
-
-function renderFood(data) {
-    const container =
-        document.getElementById("foodPlanner");
-
-    const food = findValue(data, [
+    const foodKeywords = [
         "food",
-        "food_plan",
-        "food_planner",
-        "restaurants",
-        "restaurant_recommendations",
-        "cuisine"
-    ]);
+        "restaurant",
+        "cuisine",
+        "lunch",
+        "dinner",
+        "breakfast"
+    ];
 
-    if (!food) {
+    const lines = text.split("\n");
+
+    const foodLines = lines.filter(line =>
+        foodKeywords.some(keyword =>
+            line.toLowerCase().includes(keyword)
+        )
+    );
+
+    const foodText =
+        foodLines.length > 0
+            ? foodLines.join("\n")
+            : extractFood(text);
+
+    if (!foodText) {
         return;
     }
 
     container.innerHTML = `
         <div class="food-card">
-
-            <strong>
-                🍛 Personalized Food Plan
-            </strong>
-
-            <div>
-                ${formatValue(food)}
+            <div class="food-title">
+                🍛 Personalized Food Recommendations
             </div>
 
+            <div class="food-content">
+                ${markdownToHtml(foodText)}
+            </div>
         </div>
     `;
 }
 
-
-// Packing list
-
-function renderPacking(data) {
-    const container =
-        document.getElementById("packingList");
-
-    const packing = findValue(data, [
-        "packing_items",
-        "packing_list",
-        "packing"
+function renderPacking(response) {
+    const container = findElement([
+        "packingList",
+        "packingContent",
+        "smartPacking"
     ]);
 
-    if (!packing) {
+    if (!container) {
         return;
     }
 
-    if (!Array.isArray(packing)) {
-        container.innerHTML = `
-            <div class="packing-card">
+    const text = getBestAgentText(response);
 
-                <strong>
-                    🎒 Packing List
-                </strong>
-
-                <div>
-                    ${formatValue(packing)}
-                </div>
-
-            </div>
-        `;
-
+    if (!text) {
         return;
     }
+
+    const startIndex = text.search(
+        /Packing List|Provide packing list|Packing Recommendations/i
+    );
+
+    if (startIndex < 0) {
+        return;
+    }
+
+    const packingText = text.substring(startIndex);
 
     container.innerHTML = `
         <div class="packing-card">
-
-            <strong>
+            <div class="packing-title">
                 🎒 Smart Packing List
-            </strong>
+            </div>
 
-            <ul class="result-list">
-
-                ${packing.map(item => {
-                    const text =
-                        typeof item === "object"
-                            ? (
-                                item.item ||
-                                item.name ||
-                                item.description ||
-                                JSON.stringify(item)
-                            )
-                            : item;
-
-                    const completed =
-                        typeof item === "object" &&
-                        item.completed;
-
-                    return `
-                        <li>
-                            ${completed ? "☑️" : "⬜"}
-                            ${escapeHtml(text)}
-                        </li>
-                    `;
-                }).join("")}
-
-            </ul>
-
+            <div class="packing-content">
+                ${markdownToHtml(packingText)}
+            </div>
         </div>
     `;
 }
 
-
-// AI reasoning
-
-function renderReason(data) {
-    const container =
-        document.getElementById("aiReason");
-
-    const reason = findValue(data, [
-        "reason",
+function renderReason(response) {
+    const container = findElement([
+        "aiReason",
         "reasoning",
-        "explanation",
-        "weather_reason",
-        "decision_reason"
+        "aiReasoning"
     ]);
 
-    if (!reason) {
+    if (!container) {
         return;
     }
 
+    const texts = getAllText(response);
+
+    const reasoningLines = texts.filter(text =>
+        /weather|because|reason|decision|condition|recommend/i.test(text)
+    );
+
+    if (!reasoningLines.length) {
+        return;
+    }
+
+    const reasoning = reasoningLines
+        .slice(0, 2)
+        .join("\n\n");
+
     container.innerHTML = `
         <div class="ai-reason">
-
             <div class="ai-reason-title">
-                🤖 Why AI made these decisions
+                🤖 AI reasoning
             </div>
 
-            <div>
-                ${formatValue(reason)}
+            <div class="ai-reason-content">
+                ${markdownToHtml(reasoning)}
             </div>
-
         </div>
     `;
 }
 
-
-// Main response renderer
-
 function renderResponse(response) {
-    if (response === null || response === undefined) {
+    if (
+        response === null ||
+        response === undefined
+    ) {
         return `
             <div class="result-card">
                 No response received.
@@ -496,45 +544,60 @@ function renderResponse(response) {
         `;
     }
 
-    if (typeof response === "string") {
+    const items = getResponseItems(response);
+
+    if (!items.length) {
         return `
             <div class="result-card">
-                ${escapeHtml(response).replace(/\n/g, "<br>")}
+                No response received.
             </div>
         `;
     }
 
-    if (Array.isArray(response)) {
-        return response
-            .map((item, index) => {
-                return `
-                    <div class="result-section">
+    return items.map((item, index) => {
+        let text = "";
 
-                        <h3>
-                            🤖 Agent Result ${index + 1}
-                        </h3>
+        if (typeof item === "string") {
+            text = item;
+        } else if (item && typeof item === "object") {
+            text =
+                item.text ||
+                item.content ||
+                item.message ||
+                item.summary ||
+                "";
+        }
 
-                        ${formatObject(item)}
+        if (!text) {
+            return "";
+        }
 
-                    </div>
-                `;
-            })
-            .join("");
-    }
+        const type =
+            item && typeof item === "object"
+                ? item.type || ""
+                : "";
 
-    if (typeof response === "object") {
         return `
             <div class="result-section">
-                ${formatObject(response)}
+
+                <h3>
+                    🤖 Agent Result ${index + 1}
+                </h3>
+
+                ${
+                    type
+                        ? `<div class="result-type">${escapeHtml(type)}</div>`
+                        : ""
+                }
+
+                <div class="agent-text">
+                    ${markdownToHtml(text)}
+                </div>
+
             </div>
         `;
-    }
-
-    return escapeHtml(response);
+    }).join("");
 }
-
-
-// Send message
 
 async function sendMessage() {
     const messageBox =
@@ -545,6 +608,13 @@ async function sendMessage() {
 
     const button =
         document.getElementById("planButton");
+
+    if (!messageBox || !responseBox || !button) {
+        console.error(
+            "Required planner elements are missing."
+        );
+        return;
+    }
 
     const message =
         messageBox.value.trim();
@@ -576,7 +646,8 @@ async function sendMessage() {
                 method: "POST",
 
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type":
+                        "application/json"
                 },
 
                 body: JSON.stringify({
@@ -585,7 +656,8 @@ async function sendMessage() {
             }
         );
 
-        const data = await response.json();
+        const data =
+            await response.json();
 
         if (!response.ok) {
             throw new Error(
@@ -594,14 +666,20 @@ async function sendMessage() {
             );
         }
 
+        console.log(
+            "Trip planner response:",
+            data
+        );
+
         responseBox.innerHTML =
             renderResponse(data.response);
 
-        updateTripSummary(data);
-        renderWeather(data);
-        renderFood(data);
-        renderPacking(data);
-        renderReason(data);
+        updateTripSummary(data.response);
+        renderItinerary(data.response);
+        renderWeather(data.response);
+        renderFood(data.response);
+        renderPacking(data.response);
+        renderReason(data.response);
 
         responseBox.scrollIntoView({
             behavior: "smooth",
@@ -633,9 +711,6 @@ async function sendMessage() {
         button.textContent = "✨ Plan My Trip";
     }
 }
-
-
-// Ctrl + Enter support
 
 document.addEventListener(
     "DOMContentLoaded",
