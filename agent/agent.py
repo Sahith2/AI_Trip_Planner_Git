@@ -183,6 +183,40 @@ TOOL_DEFINITIONS = [
     {
         "type": "function",
         "function": {
+            "name": "remove_itinerary_item",
+            "description": "Remove an item from a trip itinerary.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "item_id": {"type": "integer"},
+                    "reason": {"type": "string"},
+                },
+                "required": ["item_id", "reason"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "add_packing_item",
+            "description": "Add an item to a trip packing list.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "trip_id": {"type": "integer"},
+                    "item": {"type": "string"},
+                    "reason": {"type": "string"},
+                },
+                "required": [
+                    "trip_id",
+                    "item",
+                ],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
             "name": "add_packing_item",
             "description": "Add an item to a trip packing list.",
             "parameters": {
@@ -228,6 +262,7 @@ TOOL_FUNCTIONS = {
     "get_itinerary": tools.get_itinerary,
     "create_trip": tools.create_trip,
     "add_itinerary_item": tools.add_itinerary_item,
+    "remove_itinerary_item": tools.remove_itinerary_item,
     "update_itinerary_item": tools.update_itinerary_item,
     "add_packing_item": tools.add_packing_item,
     "get_packing_list": tools.get_packing_list,
@@ -304,9 +339,14 @@ Important behavior:
 4. Do not claim that something was saved or changed unless
    the corresponding tool successfully completed the action.
 
-5. When bad weather affects an outdoor activity, suggest an
-   appropriate adjustment and use update_itinerary_item when
-   the user has asked for the itinerary to be changed.
+5. Proactively check weather AND air quality for every outdoor
+   activity date. If rain probability is high or air quality is
+   poor, automatically call update_itinerary_item to reschedule
+   it — do not wait for the user to ask — and always include a
+   `reason` explaining the weather/AQI trigger. Use
+   remove_itinerary_item if an activity can't be salvaged by
+   rescheduling, and add_itinerary_item to add a suitable
+   replacement.
 
 6. Keep responses clear and useful.
 
