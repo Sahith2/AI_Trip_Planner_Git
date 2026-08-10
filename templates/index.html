@@ -1,1439 +1,644 @@
-function useExample(text) {
-  const box = document.getElementById("message");
+<!DOCTYPE html>
+<html lang="en">
 
-  box.value = text;
-  box.focus();
-}
+<head>
+    <meta charset="UTF-8">
 
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-function escapeHtml(value) {
+    <title>AI Trip Planner</title>
 
-  if (value === null || value === undefined) {
-    return "";
-  }
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+</head>
 
-  return String(value)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
+<body>
 
+<header class="hero">
 
-function plainText(value) {
+    <div class="hero-inner">
 
-  if (value === null || value === undefined) {
-    return "";
-  }
-
-  if (
-    typeof value === "string" ||
-    typeof value === "number" ||
-    typeof value === "boolean"
-  ) {
-    return String(value);
-  }
-
-  if (Array.isArray(value)) {
-    return value
-      .map(plainText)
-      .filter(Boolean)
-      .join(" ");
-  }
-
-  if (typeof value === "object") {
-
-    const preferred = [
-      "text",
-      "content",
-      "message",
-      "summary",
-      "description",
-      "reason",
-      "reasoning",
-      "explanation",
-      "name",
-      "item",
-      "title"
-    ];
-
-    for (const key of preferred) {
-
-      if (value[key] !== undefined) {
-
-        const text = plainText(value[key]);
-
-        if (text) {
-          return text;
-        }
-      }
-    }
-
-    return Object.values(value)
-      .map(plainText)
-      .filter(Boolean)
-      .join(" ");
-  }
-
-  return String(value);
-}
-
-
-function findValue(data, keys) {
-
-  if (
-    data === null ||
-    data === undefined ||
-    typeof data !== "object"
-  ) {
-    return null;
-  }
-
-  for (const key of keys) {
-
-    if (
-      Object.prototype.hasOwnProperty.call(data, key) &&
-      data[key] !== null &&
-      data[key] !== undefined
-    ) {
-      return data[key];
-    }
-  }
-
-  for (const value of Object.values(data)) {
-
-    if (value && typeof value === "object") {
-
-      const found = findValue(value, keys);
-
-      if (
-        found !== null &&
-        found !== undefined
-      ) {
-        return found;
-      }
-    }
-  }
-
-  return null;
-}
-
-
-function extractResponseParts(response) {
-
-  const parts = {
-    text: [],
-    reasoning: []
-  };
-
-  const visit = value => {
-
-    if (
-      value === null ||
-      value === undefined
-    ) {
-      return;
-    }
-
-    if (typeof value === "string") {
-
-      if (value.trim()) {
-        parts.text.push(value.trim());
-      }
-
-      return;
-    }
-
-    if (Array.isArray(value)) {
-
-      value.forEach(visit);
-
-      return;
-    }
-
-    if (typeof value !== "object") {
-      return;
-    }
-
-    if (value.text) {
-      parts.text.push(
-        plainText(value.text)
-      );
-    }
-
-    else if (value.content) {
-      parts.text.push(
-        plainText(value.content)
-      );
-    }
-
-    for (
-      const key of [
-        "reasoning",
-        "reason",
-        "explanation",
-        "decision_reason",
-        "weather_reason"
-      ]
-    ) {
-
-      if (value[key]) {
-
-        parts.reasoning.push(
-          plainText(value[key])
-        );
-      }
-    }
-
-    for (
-      const [key, child]
-      of Object.entries(value)
-    ) {
-
-      if (
-        [
-          "text",
-          "content",
-          "reasoning",
-          "reason",
-          "explanation",
-          "decision_reason",
-          "weather_reason"
-        ].includes(key)
-      ) {
-        continue;
-      }
-
-      if (
-        typeof child === "object"
-      ) {
-        visit(child);
-      }
-    }
-  };
-
-  visit(response);
-
-  parts.text = [
-    ...new Set(
-      parts.text.filter(Boolean)
-    )
-  ];
-
-  parts.reasoning = [
-    ...new Set(
-      parts.reasoning.filter(Boolean)
-    )
-  ];
-
-  return parts;
-}
-
-
-function getCombinedText(response) {
-
-  const parts =
-    extractResponseParts(response);
-
-  return (
-    parts.text.join("\n\n").trim() ||
-    plainText(response)
-  );
-}
-
-
-function cleanMarkdown(text) {
-
-  return text
-    .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/\r/g, "")
-    .replace(
-      /^\s*\|[- :|]+\|\s*$/gm,
-      ""
-    )
-    .replace(
-      /^\s*\|/gm,
-      ""
-    )
-    .replace(
-      /\|\s*$/gm,
-      ""
-    )
-    .replace(
-      /^\s*---+\s*$/gm,
-      ""
-    )
-    .trim();
-}
-
-
-function inlineText(text) {
-
-  return escapeHtml(
-    text
-      .replace(
-        /\*\*(.*?)\*\*/g,
-        "$1"
-      )
-      .replace(
-        /__(.*?)__/g,
-        "$1"
-      )
-      .replace(
-        /\*(.*?)\*/g,
-        "$1"
-      )
-      .replace(
-        /`([^`]+)`/g,
-        "$1"
-      )
-      .trim()
-  );
-}
-
-
-function inferDestination(text, data) {
-
-  const value = findValue(
-    data,
-    [
-      "destination",
-      "destination_name",
-      "location",
-      "city"
-    ]
-  );
-
-  if (
-    value &&
-    typeof value !== "object"
-  ) {
-    return String(value);
-  }
-
-  const match = text.match(
-    /(?:trip to|weekend trip to|in)\s+([A-Z][A-Za-z .'-]+?)(?:\s+with|\s+for|\s+and|[.!?,]|$)/i
-  );
-
-  if (match) {
-    return match[1].trim();
-  }
-
-  return "—";
-}
-
-
-function inferFood(text) {
-
-  const match = text.match(
-    /\b(Indian|Thai|Italian|Mexican|seafood|vegetarian|vegan|local|Asian)\b/i
-  );
-
-  return match
-    ? match[1]
-    : "Personalized";
-}
-
-
-function inferWeatherSummary(text) {
-
-  const match = text.match(
-    /(\d+%[^.\n]*rain|rain[^.\n]*\d+%|sunny|cloudy|overcast|showers)/i
-  );
-
-  return match
-    ? match[0].slice(0, 50)
-    : "Forecast included";
-}
-
-
-function updateTripSummary(data, text) {
-
-  const destination =
-    inferDestination(text, data);
-
-  const duration =
-    findValue(
-      data,
-      [
-        "duration",
-        "duration_days",
-        "days",
-        "trip_duration"
-      ]
-    );
-
-  const budget =
-    findValue(
-      data,
-      [
-        "budget",
-        "estimated_cost",
-        "trip_budget"
-      ]
-    );
-
-  const food =
-    findValue(
-      data,
-      [
-        "food_preference",
-        "cuisine_preference",
-        "food",
-        "cuisine"
-      ]
-    );
-
-  const weather =
-    findValue(
-      data,
-      [
-        "weather_description",
-        "weather_summary",
-        "weather"
-      ]
-    );
-
-
-  document.getElementById(
-    "summaryDestination"
-  ).textContent = destination;
-
-
-  if (duration) {
-
-    document.getElementById(
-      "summaryDuration"
-    ).textContent =
-      typeof duration === "number"
-        ? `${duration} days`
-        : plainText(duration);
-
-  } else {
-
-    const match =
-      text.match(/\b(\d+)\s*[- ]?day\b/i);
-
-    document.getElementById(
-      "summaryDuration"
-    ).textContent =
-      match
-        ? `${match[1]} days`
-        : "—";
-  }
-
-
-  document.getElementById(
-    "summaryBudget"
-  ).textContent =
-    budget
-      ? typeof budget === "number"
-        ? `$${budget}`
-        : plainText(budget)
-      : "—";
-
-
-  document.getElementById(
-    "summaryFood"
-  ).textContent =
-    food
-      ? typeof food === "object"
-        ? "Personalized"
-        : plainText(food)
-      : inferFood(text);
-
-
-  document.getElementById(
-    "summaryWeather"
-  ).textContent =
-    weather
-      ? typeof weather === "object"
-        ? "Forecast included"
-        : plainText(weather).slice(0, 50)
-      : inferWeatherSummary(text);
-}
-
-
-/* =========================
-   WEATHER
-========================= */
-
-function weatherIcon(description) {
-
-  const d =
-    description.toLowerCase();
-
-  if (d.includes("thunder")) {
-    return "⛈️";
-  }
-
-  if (
-    d.includes("rain") ||
-    d.includes("shower")
-  ) {
-    return "🌧️";
-  }
-
-  if (d.includes("snow")) {
-    return "❄️";
-  }
-
-  if (
-    d.includes("cloud") ||
-    d.includes("overcast")
-  ) {
-    return "☁️";
-  }
-
-  return "☀️";
-}
-
-
-function renderWeather(data, text) {
-
-  const container =
-    document.getElementById("weather");
-
-  let weather =
-    findValue(
-      data,
-      [
-        "weather_snapshots",
-        "forecast",
-        "weather_data"
-      ]
-    );
-
-  if (!weather) {
-    weather =
-      findValue(
-        data,
-        ["weather"]
-      );
-  }
-
-
-  if (
-    Array.isArray(weather) &&
-    weather.length
-  ) {
-
-    container.innerHTML =
-      weather.map(day => {
-
-        const date =
-          day.forecast_date ||
-          day.date ||
-          "Forecast";
-
-        const description =
-          day.weather_description ||
-          day.description ||
-          "Weather information";
-
-        const high =
-          day.temperature_high ??
-          day.high;
-
-        const low =
-          day.temperature_low ??
-          day.low;
-
-        const rain =
-          day.precipitation_probability ??
-          day.rain_probability;
-
-
-        return `
-          <div class="weather-card">
-
-            <div class="weather-date">
-              ${escapeHtml(date)}
-            </div>
-
-            <div class="weather-main">
-
-              <span class="weather-icon">
-                ${weatherIcon(description)}
-              </span>
-
-              <span class="weather-temp">
-                ${
-                  high !== undefined
-                    ? escapeHtml(high) + "°"
-                    : "—"
-                }
-              </span>
-
-            </div>
-
-            <div class="weather-desc">
-              ${escapeHtml(description)}
-            </div>
-
-            <div class="weather-meta">
-
-              ${
-                low !== undefined
-                  ? `<span class="chip">
-                       Low ${escapeHtml(low)}°
-                     </span>`
-                  : ""
-              }
-
-              ${
-                rain !== undefined
-                  ? `<span class="chip">
-                       Rain ${escapeHtml(rain)}%
-                     </span>`
-                  : ""
-              }
-
-            </div>
-
-          </div>
-        `;
-
-      }).join("");
-
-    return;
-  }
-
-
-  container.innerHTML = `
-    <div class="weather-card">
-
-      <div class="weather-date">
-        Trip conditions
-      </div>
-
-      <div class="weather-main">
-        <span class="weather-icon">
-          🌤️
-        </span>
-      </div>
-
-      <div class="weather-desc">
-        Weather details were considered
-        in the plan.
-      </div>
-
-    </div>
-  `;
-}
-
-
-/* =========================
-   FOOD
-========================= */
-
-function renderFood(data, text) {
-
-  const container =
-    document.getElementById(
-      "foodPlanner"
-    );
-
-  const food =
-    findValue(
-      data,
-      [
-        "food_plan",
-        "food_planner",
-        "restaurants",
-        "restaurant_recommendations",
-        "cuisine"
-      ]
-    );
-
-
-  if (
-    Array.isArray(food) &&
-    food.length
-  ) {
-
-    container.innerHTML =
-      food
-        .slice(0, 8)
-        .map((item, i) => {
-
-          const name =
-            plainText(
-              item.name ||
-              item.restaurant ||
-              item.title ||
-              item.item ||
-              item
-            );
-
-          const reason =
-            plainText(
-              item.reason ||
-              item.description ||
-              item.notes ||
-              "Good fit for the trip."
-            );
-
-
-          const meal =
-            i % 3 === 0
-              ? "Breakfast"
-              : i % 3 === 1
-                ? "Lunch"
-                : "Dinner";
-
-
-          return `
-            <div class="food-card">
-
-              <div class="meal-label">
-                ${meal}
-              </div>
-
-              <div class="food-name">
-                ${escapeHtml(name)}
-              </div>
-
-              <div class="food-reason">
-                ${escapeHtml(reason)}
-              </div>
-
-            </div>
-          `;
-
-        })
-        .join("");
-
-    return;
-  }
-
-
-  container.innerHTML = `
-    <div class="food-card">
-
-      <div class="meal-label">
-        Personalized
-      </div>
-
-      <div class="food-name">
-        Local dining recommendations
-      </div>
-
-      <div class="food-reason">
-        Food suggestions were incorporated
-        into your itinerary.
-      </div>
-
-    </div>
-  `;
-}
-
-
-/* =========================
-   PACKING
-========================= */
-
-function splitListItems(text) {
-
-  return text
-    .split(/\n|•|\s*;\s*/)
-    .map(
-      s =>
-        s
-          .replace(/^[-*]\s*/, "")
-          .replace(/\s+/g, " ")
-          .trim()
-    )
-    .filter(
-      s => s.length > 2
-    );
-}
-
-
-function renderPacking(data, text) {
-
-  const container =
-    document.getElementById(
-      "packingList"
-    );
-
-  const packing =
-    findValue(
-      data,
-      [
-        "packing_items",
-        "packing_list",
-        "packing"
-      ]
-    );
-
-  let items = [];
-
-
-  if (Array.isArray(packing)) {
-
-    items =
-      packing.map(
-        x =>
-          plainText(
-            x.item ||
-            x.name ||
-            x.description ||
-            x
-          )
-      );
-  }
-
-
-  if (!items.length) {
-
-    items = [
-      "Lightweight breathable clothing",
-      "Comfortable walking shoes",
-      "Sunscreen",
-      "Hat and sunglasses",
-      "Reusable water bottle",
-      "Rain layer or compact umbrella",
-      "Portable charger"
-    ];
-  }
-
-
-  container.innerHTML = `
-    <div class="packing-card">
-
-      <ul class="packing-list">
-
-        ${
-          [...new Set(items)]
-            .slice(0, 16)
-            .map(
-              item => `
-                <li>
-
-                  <span class="check">
-                    ✓
-                  </span>
-
-                  <span>
-                    ${escapeHtml(item)}
-                  </span>
-
-                </li>
-              `
-            )
-            .join("")
-        }
-
-      </ul>
-
-    </div>
-  `;
-}
-
-
-/* =========================
-   REASONING
-========================= */
-
-function splitReasoning(raw) {
-
-  if (!raw) {
-    return [];
-  }
-
-  return raw
-    .split(
-      /\n\s*\n|(?<=\.)\s+(?=[A-Z])/
-    )
-    .map(
-      x =>
-        x
-          .replace(/^[-*]\s*/, "")
-          .trim()
-    )
-    .filter(
-      x => x.length > 15
-    );
-}
-
-
-function renderReason(data, response) {
-
-  const container =
-    document.getElementById(
-      "aiReason"
-    );
-
-  const parts =
-    extractResponseParts(response);
-
-  const direct =
-    findValue(
-      data,
-      [
-        "reason",
-        "reasoning",
-        "explanation",
-        "weather_reason",
-        "decision_reason"
-      ]
-    );
-
-  const raw =
-    direct
-      ? plainText(direct)
-      : parts.reasoning.join(" ");
-
-
-  let items =
-    splitReasoning(raw);
-
-
-  if (!items.length) {
-
-    const text =
-      getCombinedText(response);
-
-    items = [
-
-      "Activities were selected to match the trip preferences and destination.",
-
-      /rain|shower|weather|temperature|forecast/i.test(text)
-        ? "Outdoor activities were arranged with weather conditions in mind."
-        : "The plan balances sightseeing, downtime and practical travel flow.",
-
-      /food|restaurant|cafe|café|dinner|lunch/i.test(text)
-        ? "Food suggestions were included alongside the day's activities."
-        : "Recommendations are designed to keep the itinerary practical and enjoyable."
-
-    ];
-  }
-
-
-  container.innerHTML = `
-    <div class="reason-box">
-
-      <ul class="reason-list">
-
-        ${
-          items
-            .slice(0, 6)
-            .map(
-              x =>
-                `<li>${inlineText(x)}</li>`
-            )
-            .join("")
-        }
-
-      </ul>
-
-    </div>
-  `;
-}
-
-
-/* =========================
-   ITINERARY
-========================= */
-
-function renderItinerary(text) {
-
-  const container =
-    document.getElementById(
-      "itinerary"
-    );
-
-  let source =
-    text.replace(
-      /<br\s*\/?>/gi,
-      "\n"
-    );
-
-
-  const dayMatches =
-    [
-      ...source.matchAll(
-        /(?:^|\n)\s*(?:\*\*)?Day\s*(\d+)(?:\s*[–-]\s*|\s*:\s*)(.*?)(?=(?:\n\s*(?:\*\*)?Day\s*\d+)|$)/gis
-      )
-    ];
-
-
-  if (dayMatches.length) {
-
-    container.innerHTML =
-      dayMatches
-        .map((match, index) => {
-
-          const day =
-            match[1];
-
-          const title =
-            match[2].trim();
-
-          return `
-            <div class="day-card">
-
-              <div class="day-header">
-
-                <div class="day-number">
-                  ${day}
-                </div>
-
-                <div>
-
-                  <div class="day-title">
-                    ${inlineText(title)}
-                  </div>
-
-                  <div class="day-subtitle">
-                    Personalized activities
-                  </div>
-
-                </div>
-
-              </div>
-
-              <div class="timeline">
-
-                <div class="timeline-item">
-
-                  <div class="timeline-time">
-                    Day ${day}
-                  </div>
-
-                  <div class="timeline-desc">
-                    ${inlineText(
-                      source
-                        .slice(
-                          match.index,
-                          match.index +
-                          1800
-                        )
-                    )}
-                  </div>
-
-                </div>
-
-              </div>
-
-            </div>
-          `;
-
-        })
-        .join("");
-
-    return;
-  }
-
-
-  const bullets =
-    source
-      .split("\n")
-      .filter(
-        x => /^[-*•]/.test(x)
-      );
-
-
-  if (bullets.length) {
-
-    container.innerHTML = `
-      <div class="day-card">
-
-        <div class="day-header">
-
-          <div class="day-number">
-            ✓
-          </div>
-
-          <div>
-
-            <div class="day-title">
-              Your personalized plan
-            </div>
-
-            <div class="day-subtitle">
-              Highlights from your trip
-            </div>
-
-          </div>
-
-        </div>
-
-        <div class="timeline">
-
-          ${
-            bullets
-              .slice(0, 12)
-              .map(
-                (item, index) => `
-                  <div class="timeline-item">
-
-                    <div class="timeline-time">
-                      Step ${index + 1}
-                    </div>
-
-                    <div class="timeline-desc">
-                      ${inlineText(
-                        item.replace(
-                          /^[-*•]\s*/,
-                          ""
-                        )
-                      )}
-                    </div>
-
-                  </div>
-                `
-              )
-              .join("")
-          }
-
-        </div>
-
-      </div>
-    `;
-
-    return;
-  }
-
-
-  container.innerHTML = `
-    <div class="day-card">
-
-      <div class="day-header">
-
-        <div class="day-number">
-          ✦
+        <div class="brand-mark">
+            🌎
         </div>
 
         <div>
 
-          <div class="day-title">
-            Personalized itinerary
-          </div>
+            <div class="eyebrow">
+                AI-POWERED TRAVEL PLANNING
+            </div>
 
-          <div class="day-subtitle">
-            Your plan is ready
-          </div>
+            <h1>
+                AI Trip Planner
+            </h1>
 
-        </div>
-
-      </div>
-
-      <div class="timeline">
-
-        <div class="timeline-item">
-
-          <div class="timeline-desc">
-            ${inlineText(
-              source.slice(0, 3000)
-            )}
-          </div>
+            <p>
+                Build smarter trips with AI-powered
+                itineraries, weather intelligence,
+                air quality and personalized recommendations.
+            </p>
 
         </div>
 
-      </div>
-
     </div>
-  `;
-}
 
+</header>
 
-/* =========================
-   RESET
-========================= */
 
-function resetResults() {
+<main class="container">
 
-  document.getElementById(
-    "summaryDestination"
-  ).textContent = "—";
 
-  document.getElementById(
-    "summaryDuration"
-  ).textContent = "—";
+    <section class="card planner-card">
 
-  document.getElementById(
-    "summaryWeather"
-  ).textContent = "—";
+        <div class="section-heading">
 
-  document.getElementById(
-    "summaryBudget"
-  ).textContent = "—";
+            <div class="icon-badge blue">
+                ✨
+            </div>
 
-  document.getElementById(
-    "summaryFood"
-  ).textContent = "—";
-}
+            <div>
 
+                <h2>
+                    Plan Your Next Adventure
+                </h2>
 
-/* =========================
-   MAIN API CALL
-========================= */
+                <p>
+                    Tell the AI agent what you want
+                    from your trip.
+                </p>
 
-async function sendMessage() {
+            </div>
 
-  const messageBox =
-    document.getElementById(
-      "message"
-    );
+        </div>
 
-  const button =
-    document.getElementById(
-      "planButton"
-    );
 
-  const message =
-    messageBox.value.trim();
+        <textarea
+            id="message"
+            placeholder="Example: Plan a 5-day trip to New York with outdoor activities, Indian food, a reasonable budget, and weather-aware scheduling."
+        ></textarea>
 
 
-  if (!message) {
+        <div class="planner-actions">
 
-    messageBox.focus();
+            <button
+                id="planButton"
+                class="primary-button"
+                onclick="sendMessage()"
+            >
+                ✨ Plan My Trip
+            </button>
 
-    return;
-  }
+            <span class="shortcut">
+                AI will search, analyze and build your plan
+            </span>
 
+        </div>
 
-  button.disabled = true;
 
-  button.innerHTML = `
-    <span class="spinner"></span>
-    Planning your trip…
-  `;
+        <div class="examples">
 
+            <div
+                class="example"
+                onclick="useExample('Plan a 3-day trip to Chicago with outdoor activities and good food.')"
+            >
+                🏙️ Chicago 3-day trip
+            </div>
 
-  resetResults();
+            <div
+                class="example"
+                onclick="useExample('Plan a weekend trip to Austin with outdoor activities and good food.')"
+            >
+                🌵 Austin weekend
+            </div>
 
+            <div
+                class="example"
+                onclick="useExample('Plan a 5-day trip to New York with Indian food and weather-aware outdoor activities.')"
+            >
+                🗽 New York + Food
+            </div>
 
-  document.getElementById(
-    "itinerary"
-  ).innerHTML = `
-    <div class="loading">
-      <span class="spinner"></span>
-      Building your itinerary…
-    </div>
-  `;
+            <div
+                class="example"
+                onclick="useExample('Create a packing list for a rainy outdoor trip.')"
+            >
+                🎒 Packing list
+            </div>
 
+            <div
+                class="example"
+                onclick="useExample('Find interesting historical attractions in Chicago.')"
+            >
+                🏛️ Historical attractions
+            </div>
 
-  document.getElementById(
-    "weather"
-  ).innerHTML = `
-    <div class="loading">
-      <span class="spinner"></span>
-      Checking destination conditions…
-    </div>
-  `;
+        </div>
 
+    </section>
 
-  document.getElementById(
-    "foodPlanner"
-  ).innerHTML = `
-    <div class="loading">
-      <span class="spinner"></span>
-      Finding food ideas…
-    </div>
-  `;
 
 
-  document.getElementById(
-    "packingList"
-  ).innerHTML = `
-    <div class="loading">
-      <span class="spinner"></span>
-      Preparing your packing list…
-    </div>
-  `;
+    <section
+        class="card"
+        id="tripSummaryCard"
+    >
 
+        <div class="section-heading compact-heading">
 
-  document.getElementById(
-    "aiReason"
-  ).innerHTML = `
-    <div class="loading">
-      <span class="spinner"></span>
-      Explaining the plan…
-    </div>
-  `;
+            <div class="icon-badge indigo">
+                🧭
+            </div>
 
+            <div>
 
-  try {
+                <h2>
+                    Trip Summary
+                </h2>
 
-    const response =
-      await fetch(
-        "/api/chat",
-        {
-          method: "POST",
+                <p>
+                    A quick overview of your AI-generated trip.
+                </p>
 
-          headers: {
-            "Content-Type":
-              "application/json"
-          },
+            </div>
 
-          body: JSON.stringify({
-            message
-          })
-        }
-      );
+        </div>
 
 
-    const data =
-      await response.json();
+        <div
+            id="tripSummary"
+            class="summary-grid"
+        >
 
+            <div class="summary-item">
 
-    if (!response.ok) {
+                <span class="label">
+                    Destination
+                </span>
 
-      throw new Error(
-        data.error ||
-        "Request failed."
-      );
-    }
+                <span
+                    class="value"
+                    id="summaryDestination"
+                >
+                    —
+                </span>
 
+            </div>
 
-    const responseValue =
-      data.response ?? data;
 
+            <div class="summary-item">
 
-    const text =
-      getCombinedText(
-        responseValue
-      );
+                <span class="label">
+                    Duration
+                </span>
 
+                <span
+                    class="value"
+                    id="summaryDuration"
+                >
+                    —
+                </span>
 
-    updateTripSummary(
-      data,
-      text
-    );
+            </div>
 
-    renderItinerary(
-      text,
-      data
-    );
 
-    renderWeather(
-      data,
-      text
-    );
+            <div class="summary-item">
 
-    renderFood(
-      data,
-      text
-    );
+                <span class="label">
+                    Weather
+                </span>
 
-    renderPacking(
-      data,
-      text
-    );
+                <span
+                    class="value"
+                    id="summaryWeather"
+                >
+                    —
+                </span>
 
-    renderReason(
-      data,
-      responseValue
-    );
+            </div>
 
 
-    document
-      .getElementById(
-        "tripSummaryCard"
-      )
-      .scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
+            <div class="summary-item">
 
+                <span class="label">
+                    Budget
+                </span>
 
-  } catch (error) {
+                <span
+                    class="value"
+                    id="summaryBudget"
+                >
+                    —
+                </span>
 
-    console.error(
-      "Trip planner error:",
-      error
-    );
+            </div>
 
 
-    const errorHtml = `
-      <div class="error">
+            <div class="summary-item">
 
-        <strong>
-          We couldn't build the trip.
-        </strong>
+                <span class="label">
+                    Food
+                </span>
 
-        <br>
+                <span
+                    class="value"
+                    id="summaryFood"
+                >
+                    —
+                </span>
 
-        <small>
-          ${escapeHtml(
-            error.message
-          )}
-        </small>
+            </div>
 
-      </div>
-    `;
+        </div>
 
+    </section>
 
-    document.getElementById(
-      "itinerary"
-    ).innerHTML = errorHtml;
 
-    document.getElementById(
-      "weather"
-    ).innerHTML = errorHtml;
 
-    document.getElementById(
-      "foodPlanner"
-    ).innerHTML = errorHtml;
+    <section class="card">
 
-    document.getElementById(
-      "packingList"
-    ).innerHTML = errorHtml;
+        <div class="section-heading">
 
-    document.getElementById(
-      "aiReason"
-    ).innerHTML = errorHtml;
+            <div class="icon-badge purple">
+                🤖
+            </div>
 
+            <div>
 
-  } finally {
+                <h2>
+                    AI Planner
+                </h2>
 
-    button.disabled = false;
+                <p>
+                    Your AI agent searches information,
+                    evaluates conditions and builds your trip.
+                </p>
 
-    button.innerHTML = `
-      <span>✨</span>
-      Plan my trip
-    `;
-  }
-}
+            </div>
 
+        </div>
 
-/* =========================
-   CTRL + ENTER
-========================= */
 
-document.addEventListener(
-  "DOMContentLoaded",
-  () => {
+        <div
+            id="response"
+            class="response"
+        >
 
-    const box =
-      document.getElementById(
-        "message"
-      );
+            <div class="empty-state">
 
-    if (!box) {
-      return;
-    }
+                <strong>
+                    Ready when you are.
+                </strong>
 
-    box.addEventListener(
-      "keydown",
-      event => {
+                <div>
+                    Enter a destination and describe
+                    the experience you want.
+                </div>
 
-        if (
-          event.key === "Enter" &&
-          event.ctrlKey
-        ) {
+            </div>
 
-          event.preventDefault();
+        </div>
 
-          sendMessage();
-        }
+    </section>
 
-      }
-    );
 
-  }
-);
+
+    <section
+        class="card"
+        id="itineraryCard"
+    >
+
+        <div class="section-heading">
+
+            <div class="icon-badge blue">
+                🗓️
+            </div>
+
+            <div>
+
+                <h2>
+                    Your Itinerary
+                </h2>
+
+                <p>
+                    Your AI-generated day-by-day itinerary.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div id="itinerary">
+
+            <div class="empty-state">
+                Your itinerary will appear here
+                after the AI creates your plan.
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <section
+        class="card"
+        id="weatherCard"
+    >
+
+        <div class="section-heading">
+
+            <div class="icon-badge sky">
+                🌦️
+            </div>
+
+            <div>
+
+                <h2>
+                    Weather Intelligence
+                </h2>
+
+                <p>
+                    Weather and air-quality information
+                    used by the AI planner.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div id="weather">
+
+            <div class="empty-state">
+                Weather information will appear
+                after planning your trip.
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <section
+        class="card"
+        id="foodCard"
+    >
+
+        <div class="section-heading">
+
+            <div class="icon-badge amber">
+                🍛
+            </div>
+
+            <div>
+
+                <h2>
+                    Food Planner
+                </h2>
+
+                <p>
+                    Personalized food recommendations
+                    based on your trip preferences.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div id="foodPlanner">
+
+            <div class="empty-state">
+                Food recommendations will appear
+                after planning your trip.
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <section
+        class="card"
+        id="packingCard"
+    >
+
+        <div class="section-heading">
+
+            <div class="icon-badge green">
+                🎒
+            </div>
+
+            <div>
+
+                <h2>
+                    Smart Packing List
+                </h2>
+
+                <p>
+                    Packing recommendations based on
+                    weather and planned activities.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div id="packingList">
+
+            <div class="empty-state">
+                Your packing list will appear
+                after planning your trip.
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <section
+        class="card"
+        id="reasonCard"
+    >
+
+        <div class="section-heading">
+
+            <div class="icon-badge violet">
+                💡
+            </div>
+
+            <div>
+
+                <h2>
+                    Why AI Made These Decisions
+                </h2>
+
+                <p>
+                    Understand important weather-based
+                    and activity-planning decisions.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div id="aiReason">
+
+            <div class="empty-state">
+                AI explanations will appear
+                after your trip is planned.
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <section class="card">
+
+        <div class="section-heading">
+
+            <div class="icon-badge purple">
+                ✨
+            </div>
+
+            <div>
+
+                <h2>
+                    What the Agent Can Do
+                </h2>
+
+                <p>
+                    Search information and take actions
+                    against your trip data.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="feature-strip">
+
+            <div>
+
+                <span>🌦️</span>
+
+                <strong>
+                    Weather-aware planning
+                </strong>
+
+                <small>
+                    Adjust outdoor activities
+                    based on conditions.
+                </small>
+
+            </div>
+
+
+            <div>
+
+                <span>🔎</span>
+
+                <strong>
+                    Semantic travel search
+                </strong>
+
+                <small>
+                    Retrieve relevant destination
+                    and attraction knowledge.
+                </small>
+
+            </div>
+
+
+            <div>
+
+                <span>📅</span>
+
+                <strong>
+                    Itinerary management
+                </strong>
+
+                <small>
+                    Create, remove, move and update
+                    itinerary items.
+                </small>
+
+            </div>
+
+
+            <div>
+
+                <span>🍛</span>
+
+                <strong>
+                    Food recommendations
+                </strong>
+
+                <small>
+                    Personalized recommendations
+                    based on preferences.
+                </small>
+
+            </div>
+
+
+            <div>
+
+                <span>🎒</span>
+
+                <strong>
+                    Smart packing
+                </strong>
+
+                <small>
+                    Build a packing list from
+                    weather and activities.
+                </small>
+
+            </div>
+
+
+            <div>
+
+                <span>🤖</span>
+
+                <strong>
+                    AI agent with tools
+                </strong>
+
+                <small>
+                    Search information and take
+                    real actions against trip data.
+                </small>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+</main>
+
+
+<script
+    src="{{ url_for('static', filename='app.js') }}"
+></script>
+
+</body>
+
+</html>
