@@ -281,17 +281,23 @@ function getCombinedText(response) {
    ============================================================ */
 
 function cleanMarkdown(text) {
+  if (text === null || text === undefined) return "";
 
-  return String(text || "")
+  return String(text)
     .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/p>/gi, "\n")
+    .replace(/<p[^>]*>/gi, "")
+    .replace(/<[^>]+>/g, "")
+    .replace(/\*\*(.*?)\*\*/g, "$1")
+    .replace(/\*(.*?)\*/g, "$1")
+    .replace(/__(.*?)__/g, "$1")
+    .replace(/_(.*?)_/g, "$1")
+    .replace(/^\s*[-*•]\s*/gm, "")
+    .replace(/^\s*#{1,6}\s*/gm, "")
     .replace(/\r/g, "")
-    .replace(/^\s*\|[- :|]+\|\s*$/gm, "")
-    .replace(/^\s*\|/gm, "")
-    .replace(/\|\s*$/gm, "")
-    .replace(/^\s*---+\s*$/gm, "")
+    .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
-
 
 /* ============================================================
    INLINE TEXT
@@ -755,6 +761,7 @@ function splitListItems(text) {
 
 function renderFood(data, text) {
   const container = document.getElementById("foodPlanner");
+  if (!container) return;
 
   function cleanFoodText(value) {
     if (value === null || value === undefined) return "";
@@ -762,9 +769,8 @@ function renderFood(data, text) {
     return String(value)
       .replace(/<br\s*\/?>/gi, " ")
       .replace(/<\/?[^>]+>/g, " ")
-      .replace(/\*\*(.*?)\*\*/g, "$1")
-      .replace(/__(.*?)__/g, "$1")
-      .replace(/`([^`]+)`/g, "$1")
+      .replace(/\*\*/g, "")
+      .replace(/__([^_]+)__/g, "$1")
       .replace(/\s+/g, " ")
       .trim();
   }
@@ -777,30 +783,38 @@ function renderFood(data, text) {
     "cuisine"
   ]);
 
-  /*
-   * --------------------------------------------------
-   * 1. STRUCTURED FOOD DATA
-   * --------------------------------------------------
-   */
+  /* -----------------------------
+     1. STRUCTURED FOOD DATA
+  ----------------------------- */
 
   if (Array.isArray(food) && food.length) {
     const cards = food
-      .slice(0, 8)
+      .slice(0, 6)
       .map((item, i) => {
         const name = cleanFoodText(
-          item?.name ||
-          item?.restaurant ||
-          item?.title ||
-          item?.item ||
-          item
+          typeof item === "object"
+            ? (
+                item.name ||
+                item.restaurant ||
+                item.title ||
+                item.item ||
+                "Food recommendation"
+              )
+            : item
         );
 
         const reason = cleanFoodText(
-          item?.reason ||
-          item?.description ||
-          item?.notes ||
-          "Good fit for the trip."
+          typeof item === "object"
+            ? (
+                item.reason ||
+                item.description ||
+                item.notes ||
+                "Good fit for the trip."
+              )
+            : ""
         );
+
+        if (!name) return "";
 
         const meal =
           i % 3 === 0
@@ -808,8 +822,6 @@ function renderFood(data, text) {
             : i % 3 === 1
               ? "Lunch"
               : "Dinner";
-
-        if (!name) return "";
 
         return `
           <div class="food-card">
@@ -821,9 +833,15 @@ function renderFood(data, text) {
               ${escapeHtml(name)}
             </div>
 
-            <div class="food-reason">
-              ${escapeHtml(reason)}
-            </div>
+            ${
+              reason
+                ? `
+                  <div class="food-reason">
+                    ${escapeHtml(reason)}
+                  </div>
+                `
+                : ""
+            }
           </div>
         `;
       })
@@ -836,142 +854,94 @@ function renderFood(data, text) {
     }
   }
 
-  /*
-   * --------------------------------------------------
-   * 2. FALLBACK: EXTRACT FOOD FROM AI TEXT
-   * --------------------------------------------------
-   */
+  /* -----------------------------
+     2. FALLBACK: EXTRACT FOOD
+        FROM AI RESPONSE
+  ----------------------------- */
 
-  const sourceText = cleanFoodText(text || "");
+  const lines = String(text || "")
+    .split("\n")
+    .map(cleanFoodText)
+    .filter(Boolean);
 
   const candidates = [];
 
-  /*
-   * Look for Breakfast / Lunch / Dinner phrases.
-   */
-  const matches = sourceText.match(
-    /(?:Breakfast|Lunch|Dinner)\s*(?:at|:|-)?\s*[^|.!?\n]+(?:[.!?])?/gi
-  ) || [];
+  for (const line of lines) {
+    const matches =
+      line.match(
+        /(?:Breakfast|Lunch|Dinner)\s*(?:at|:|-)?\s*[^|]+/gi
+      ) || [];
 
-  matches.forEach(match => {
-    const cleaned = cleanFoodText(match);
+    matches.forEach(match => {
+      const cleaned = cleanFoodText(match);
 
-    if (
-      cleaned &&
-      !candidates.some(
-        existing =>
-          existing.toLowerCase() === cleaned.toLowerCase()
-      )
-    ) {
-      candidates.push(cleaned);
-    }
-  });
-
-  /*
-   * Also look for common restaurant/food sentences
-   * if the previous pattern didn't find enough.
-   */
-  if (candidates.length < 2) {
-    const lines = String(text || "")
-      .split(/\n+/)
-      .map(cleanFoodText)
-      .filter(Boolean);
-
-    lines.forEach(line => {
       if (
-        /restaurant|cafe|café|dinner|lunch|breakfast|food|eat|meal/i.test(
-          line
-        )
+        cleaned.length > 5 &&
+        cleaned.length < 180
       ) {
-        if (
-          !candidates.some(
-            existing =>
-              existing.toLowerCase() === line.toLowerCase()
-          )
-        ) {
-          candidates.push(line);
-        }
+        candidates.push(cleaned);
       }
     });
   }
 
-  /*
-   * --------------------------------------------------
-   * 3. CREATE CLEAN FOOD CARDS
-   * --------------------------------------------------
-   */
+  const unique = [
+    ...new Set(candidates)
+  ].slice(0, 6);
 
-  const unique = [...new Set(candidates)]
-    .map(cleanFoodText)
-    .filter(Boolean)
-    .slice(0, 8);
-
-  if (unique.length) {
-    const cards = unique
-      .map((item, i) => {
-        let mealMatch = item.match(
-          /^(Breakfast|Lunch|Dinner)/i
-        );
-
-        let meal = mealMatch
-          ? mealMatch[1]
-          : i % 3 === 0
-            ? "Breakfast"
-            : i % 3 === 1
-              ? "Lunch"
-              : "Dinner";
-
-        let detail = item
-          .replace(
-            /^(Breakfast|Lunch|Dinner)\s*(?:at|for|:|-)?\s*/i,
-            ""
-          )
-          .trim();
-
-        /*
-         * Remove duplicate sentence if AI repeats
-         * the restaurant description.
-         */
-        const parts = detail
-          .split(/[.!?]/)
-          .map(x => x.trim())
-          .filter(Boolean);
-
-        const name = parts.length
-          ? parts[0]
-          : detail;
-
-        const reason =
-          parts.length > 1
-            ? parts.slice(1).join(". ")
-            : "Good fit for the trip.";
-
-        return `
-          <div class="food-card">
-            <div class="meal-label">
-              ${escapeHtml(meal)}
-            </div>
-
-            <div class="food-name">
-              ${escapeHtml(name)}
-            </div>
-
-            <div class="food-reason">
-              ${escapeHtml(reason)}
-            </div>
-          </div>
-        `;
-      })
-      .join("");
-
+  if (!unique.length) {
     container.innerHTML = `
-      <div class="food-grid">
-        ${cards}
+      <div class="empty-state">
+        No food recommendations were found.
       </div>
     `;
-
     return;
   }
+
+  container.innerHTML = `
+    <div class="food-grid">
+      ${unique
+        .map(item => {
+          const mealMatch = item.match(
+            /^(Breakfast|Lunch|Dinner)/i
+          );
+
+          const meal = mealMatch
+            ? mealMatch[1]
+            : "Food";
+
+          const detail = item
+            .replace(
+              /^(Breakfast|Lunch|Dinner)\s*(?:at|:|-)?\s*/i,
+              ""
+            )
+            .trim();
+
+          return `
+            <div class="food-card">
+
+              <div class="meal-label">
+                ${escapeHtml(meal)}
+              </div>
+
+              <div class="food-name">
+                ${escapeHtml(
+                  detail
+                    .split(/[–—-]/)[0]
+                    .trim()
+                )}
+              </div>
+
+              <div class="food-reason">
+                ${escapeHtml(detail)}
+              </div>
+
+            </div>
+          `;
+        })
+        .join("")}
+    </div>
+  `;
+}
 
   /*
    * --------------------------------------------------
