@@ -327,6 +327,41 @@ def update_itinerary_item(
         ),
     )
 
+def remove_itinerary_item(item_id: int, reason: str | None = None) -> dict | None:
+    """
+    Remove an item from a trip itinerary.
+
+    This is an agent WRITE operation and powers
+    weather-based rescheduling / cleanup.
+    """
+
+    existing = lakebase.fetch_one(
+        """
+        SELECT id, trip_id
+        FROM itinerary_items
+        WHERE id = %s
+        """,
+        (item_id,),
+    )
+
+    if not existing:
+        return None
+
+    lakebase.execute_returning(
+        """
+        DELETE FROM itinerary_items
+        WHERE id = %s
+        RETURNING id
+        """,
+        (item_id,),
+    )
+
+    return {
+        "success": True,
+        "item_id": item_id,
+        "reason": reason,
+    }
+
 
 def add_packing_item(
     trip_id: int,
